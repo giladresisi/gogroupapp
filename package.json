@@ -1,0 +1,28 @@
+{
+  "name": "test-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.1.4",
+    "bcryptjs": "^2.4.0",
+    "body-parser": "^1.15.2",
+    "colors": "^1.1.2",
+    "consolidate": "^0.14.5",
+    "cors": "^2.8.1",
+    "express": "^4.14.0",
+    "jwt-simple": "^0.5.1",
+    "moment": "^2.17.1",
+    "mongoose": "^4.7.2",
+    "morgan": "^1.7.0",
+    "path": "^0.12.7",
+    "request": "^2.79.0",
+    "swig": "^1.4.2"
+  }
+}
