@@ -22,7 +22,7 @@ angular.module('controllers', [])
   $scope.createGroup = function() {
     console.log($scope.newGroup.name);
     var options = {};
-    options.url = 'http://localhost:3000' + '/group/create';
+    options.url = BACKEND_URL + '/group/create';
     options.data = $scope.newGroup;
     options.method = 'POST';
     $http(options)

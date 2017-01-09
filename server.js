@@ -272,14 +272,11 @@ app.post('/auth/signup', function(req, res) {
           return res.status(409).send({ message: 'Email is already taken' });
         }
         hashPassword(req.body.password, function(err, hashed) {
-          var hashedPassword = hashed;
-          console.log('HashedPassword = ' + hashedPassword);
           var user = {
             displayName: req.body.displayName,
             email: req.body.email,
-            password: hashedPassword
+            password: hashed
           };
-          console.log('user.password: ' + user.password);
           users.insertOne(user, function(err, result) {
             if (err) {
               console.log('post(/auth/signup) error: collection.insertOne()');
