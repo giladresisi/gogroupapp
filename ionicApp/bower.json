@@ -1,5 +1,5 @@
 {
-  "name": "HelloIonic",
+  "name": "go-group-app",
   "private": "true",
   "devDependencies": {
     "ionic": "^1.3.1",

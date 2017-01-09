@@ -18,23 +18,20 @@
     </ion-header-bar>
     <ion-content>
       <ion-list>
-        <ion-item ng-if="!isAuthenticated()" menu-close href="#/app/signup">
+        <ion-item menu-close href="#/home">
+          Home
+        </ion-item>
+        <ion-item ng-if="!isAuthenticated()" menu-close href="#/signup">
           Signup
         </ion-item>
-        <ion-item ng-if="!isAuthenticated()" menu-close href="#/app/login">
+        <ion-item ng-if="!isAuthenticated()" menu-close href="#/login">
           Login
         </ion-item>
-		    <ion-item ng-if="isAuthenticated()" menu-close href="#/app/logout">
+		    <ion-item ng-if="isAuthenticated()" menu-close href="#/logout">
           Logout
         </ion-item>
-        <ion-item menu-close href="#/app/search">
-          Search
-        </ion-item>
-        <ion-item menu-close href="#/app/browse">
-          Browse
-        </ion-item>
-        <ion-item menu-close href="#/app/playlists">
-          Playlists
+        <ion-item ng-if="isAuthenticated()" menu-close href="#/profile">
+          Profile
         </ion-item>
       </ion-list>
     </ion-content>

@@ -15,19 +15,32 @@ angular.module('controllers', [])
   };
 })
 
-.controller('PlaylistsCtrl', function($scope) {
-  $scope.playlists = [
-    { title: 'Reggae', id: 1 },
-    { title: 'Chill', id: 2 },
-    { title: 'Dubstep', id: 3 },
-    { title: 'Indie', id: 4 },
-    { title: 'Rap', id: 5 },
-    { title: 'Cowbell', id: 6 }
-  ];
+.controller('HomeCtrl', function($scope, $http, $ionicPopup, BACKEND_URL) {
+
+  $scope.newGroup = {};
+
+  $scope.createGroup = function() {
+    console.log($scope.newGroup.name);
+    var options = {};
+    options.url = 'http://localhost:3000' + '/group/create';
+    options.data = $scope.newGroup;
+    options.method = 'POST';
+    $http(options)
+      .then(function(response) {
+        $ionicPopup.alert({
+          title: 'Success',
+          content: response.data.message
+        });
+      })
+      .catch(function(error) {
+        $ionicPopup.alert({
+          title: 'Error',
+          content: error.data.message + ' ' + error.status
+        });
+    });
+  };
 })
 
-.controller('PlaylistCtrl', function($scope, $stateParams) {
-})
 
 .controller('LogoutCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {
 
@@ -50,7 +63,7 @@ angular.module('controllers', [])
       });
 
       // Navigate back to home page using the ap states
-      $state.go('app.playlists');
+      $state.go('app.home');
     });
 })
 
@@ -76,7 +89,7 @@ angular.module('controllers', [])
         });
 
         // Navigate back to home page using the ap states
-        $state.go('app.playlists');
+        $state.go('app.home');
       })
       .catch(function(response) {
         $ionicPopup.alert({
@@ -101,7 +114,7 @@ angular.module('controllers', [])
     });
 
     // Navigate back to home page using the ap states
-    $state.go('app.playlists');
+    $state.go('app.home');
   };
 
   // Perform the login action when the user submits the login form
@@ -121,7 +134,7 @@ angular.module('controllers', [])
       .catch(function(error) {
         $ionicPopup.alert({
           title: 'Error',
-          content: error.data.message + error.status
+          content: error.data.message + ' ' + error.status
         });
       });
   };

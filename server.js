@@ -26,6 +26,13 @@ var request = require('request');
 var config = require('./config');
 
 /**
+ * Prepare MongoPool & ObjectId
+ */
+
+var MongoPool = require("./mongo-pool.js");
+var ObjectId = require('mongodb').ObjectID;
+
+/**
  * Prepare user schema, user model & DB connection
  */
 
@@ -69,10 +76,28 @@ userSchema.methods.comparePassword = function(password, done) {
 
 var User = mongoose.model('User', userSchema);
 
-mongoose.connect(config.MONGO_URI);
-mongoose.connection.on('error', function(err) {
-  console.log('Error: Could not connect to MongoDB. Did you forget to run `mongod`?'.red);
-});
+// mongoose.connect(config.MONGO_URI);
+// mongoose.connection.on('error', function(err) {
+//   console.log('Error: Could not connect to MongoDB. Did you forget to run `mongod`?'.red);
+// });
+
+/**
+ * Helper functions to compare & hash passwords
+ */
+
+function comparePassword(existing, tested, done) {
+  bcrypt.compare(tested, existing, function(err, isMatch) {
+    done(err, isMatch);
+  });
+};
+
+function hashPassword(password, done) {
+  bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(password, salt, function(err, hash) {
+      done(err, hash);
+    });
+  });
+};
 
 /**
  * Create the app itself, store values & prepare utils to be used
@@ -145,8 +170,21 @@ function createJWT(user) {
  |--------------------------------------------------------------------------
  */
 app.get('/api/me', ensureAuthenticated, function(req, res) {
-  User.findById(req.user, function(err, user) {
-    res.send(user);
+  MongoPool.getInstance(function (db){
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('get(/api/me) error: db.collection()');
+        return res.status(500).send({message: err.message });
+      }
+      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
+        if (err != null) {
+          console.log('get(/api/me) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        console.log('get(/api/me) success: user = ' + user);
+        res.send(user);
+      });
+    });
   });
 });
 
@@ -156,14 +194,23 @@ app.get('/api/me', ensureAuthenticated, function(req, res) {
  |--------------------------------------------------------------------------
  */
 app.put('/api/me', ensureAuthenticated, function(req, res) {
-  User.findById(req.user, function(err, user) {
-    if (!user) {
-      return res.status(400).send({ message: 'User not found' });
-    }
-    user.displayName = req.body.displayName || user.displayName;
-    user.email = req.body.email || user.email;
-    user.save(function(err) {
-      res.status(200).end();
+  MongoPool.getInstance(function (db){
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('put(/api/me) error: db.collection()');
+        return res.status(500).send({message: err.message });
+      }
+      users.updateOne({"_id": new ObjectId(req.user)}, {$set:{
+        displayName: req.body.displayName,
+        email: req.body.email
+      }}, function(err, user) {
+        if (err) {
+          console.log('put(/api/me) error: collection.updateOne()');
+          return res.status(500).send({ message: err.message });
+        }
+        console.log('put(/api/me) success: user = ' + user);
+        res.status(200).end();
+      });
     });
   });
 });
@@ -175,15 +222,30 @@ app.put('/api/me', ensureAuthenticated, function(req, res) {
  |--------------------------------------------------------------------------
  */
 app.post('/auth/login', function(req, res) {
-  User.findOne({ email: req.body.email }, '+password', function(err, user) {
-    if (!user) {
-      return res.status(401).send({ message: 'Invalid email and/or password' });
-    }
-    user.comparePassword(req.body.password, function(err, isMatch) {
-      if (!isMatch) {
-        return res.status(401).send({ message: 'Invalid email and/or password' });
+  MongoPool.getInstance(function (db){
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('post(/auth/login) error: db.collection()');
+        return res.status(500).send({message: err.message });
       }
-      res.send({ token: createJWT(user) });
+      users.findOne({ email: req.body.email }, {fields:{password:1}}, function(err, user) {
+        if (err != null) {
+          console.log('post(/auth/login) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        if (!user) {
+          console.log('post(/auth/login) error: Invalid email and/or password');
+          return res.status(401).send({ message: 'Invalid email and/or password' });
+        }
+      	comparePassword(user.password, req.body.password, function(err, isMatch) {
+      		if (!isMatch) {
+            console.log('post(/auth/login +) error: Passwords do not match - ' + req.body.password + ' ' + user.password);
+            return res.status(402).send({ message: 'Passwords do not match - ' + req.body.password + ' ' + user.password });
+          }
+          console.log('post(/auth/login) success: user = ' + user);
+          res.send({ token: createJWT(user) });
+      	});
+      });
     });
   });
 });
@@ -194,20 +256,40 @@ app.post('/auth/login', function(req, res) {
  |--------------------------------------------------------------------------
  */
 app.post('/auth/signup', function(req, res) {
-  User.findOne({ email: req.body.email }, function(err, existingUser) {
-    if (existingUser) {
-      return res.status(409).send({ message: 'Email is already taken' });
-    }
-    var user = new User({
-      displayName: req.body.displayName,
-      email: req.body.email,
-      password: req.body.password
-    });
-    user.save(function(err, result) {
-      if (err) {
-        res.status(500).send({ message: err.message });
+  MongoPool.getInstance(function (db){
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('post(/auth/signup) error: db.collection()');
+        return res.status(500).send({message: err.message });
       }
-      res.send({ token: createJWT(result) });
+      users.findOne({ email: req.body.email }, function(err, existingUser) {
+        if (err != null) {
+          console.log('post(/auth/signup) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        if (existingUser) {
+          console.log('post(/auth/signup) error: Email is already taken');
+          return res.status(409).send({ message: 'Email is already taken' });
+        }
+        hashPassword(req.body.password, function(err, hashed) {
+          var hashedPassword = hashed;
+          console.log('HashedPassword = ' + hashedPassword);
+          var user = {
+            displayName: req.body.displayName,
+            email: req.body.email,
+            password: hashedPassword
+          };
+          console.log('user.password: ' + user.password);
+          users.insertOne(user, function(err, result) {
+            if (err) {
+              console.log('post(/auth/signup) error: collection.insertOne()');
+              return res.status(500).send({ message: err.message });
+            }
+            console.log('post(/auth/signup) success: result = ' + result);
+            return res.send({ token: createJWT(result) });
+          });
+        });
+      });
     });
   });
 });
@@ -238,43 +320,63 @@ app.post('/auth/google', function(req, res) {
       if (profile.error) {
         return res.status(500).send({message: profile.error.message});
       }
-      // Step 3a. Link user accounts.
-      if (req.header('Authorization')) {
-        User.findOne({ google: profile.sub }, function(err, existingUser) {
-          if (existingUser) {
-            return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
+      MongoPool.getInstance(function (db){
+        db.collection('users', function(err, users) {
+          if (err != null) {
+            console.log('post(/auth/google) error: db.collection()');
+            return res.status(500).send({message: err.message });
           }
-          var token = req.header('Authorization').split(' ')[1];
-          var payload = jwt.decode(token, config.TOKEN_SECRET);
-          User.findById(payload.sub, function(err, user) {
-            if (!user) {
-              return res.status(400).send({ message: 'User not found' });
-            }
-            user.google = profile.sub;
-            user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
-            user.displayName = user.displayName || profile.name;
-            user.save(function() {
-              var token = createJWT(user);
-              res.send({ token: token });
+          // Step 3a. Link user accounts.
+          if (req.header('Authorization')) {
+            users.findOne({ google: profile.sub }, function(err, existingUser) {
+              if (existingUser) {
+                console.log('post(/auth/google) error: existing google account');
+                return res.status(409).send({ message: 'There is already a Google account that belongs to you' });
+              }
+              var token = req.header('Authorization').split(' ')[1];
+              var payload = jwt.decode(token, config.TOKEN_SECRET);
+              users.findOne({"_id": new ObjectId(payload.sub)}, function(err, user) {
+                if (!user) {
+                  console.log('post(/auth/google) error: User not found');
+                  return res.status(400).send({ message: 'User not found' });
+                }
+                user.google = profile.sub;
+                user.picture = user.picture || profile.picture.replace('sz=50', 'sz=200');
+                user.displayName = user.displayName || profile.name;
+                users.save(user, function(err) {
+                  if (err) {
+                    console.log('post(/auth/google) error: collection.save()');
+                    return res.status(500).send({ message: err.message });
+                  }
+                  var token = createJWT(user);
+                  return res.send({ token: token });
+                });
+              });
             });
-          });
-        });
-      } else {
-        // Step 3b. Create a new user account or return an existing one.
-        User.findOne({ google: profile.sub }, function(err, existingUser) {
-          if (existingUser) {
-            return res.send({ token: createJWT(existingUser) });
+          } else {
+            // Step 3b. Create a new user account or return an existing one.
+            users.findOne({ google: profile.sub }, function(err, existingUser) {
+              if (existingUser) {
+                console.log('post(/auth/google) returning existing google account');
+                return res.send({ token: createJWT(existingUser) });
+              }
+              var user = {
+                google: profile.sub,
+                picture: profile.picture.replace('sz=50', 'sz=200'),
+                displayName: profile.name
+              }
+              users.insertOne(user, function(err) {
+                if (err) {
+                  console.log('post(/auth/google) error: collection.insertOne()');
+                  return res.status(500).send({ message: err.message });
+                }
+                var token = createJWT(user);
+                return res.send({ token: token });
+              });
+            });
           }
-          var user = new User();
-          user.google = profile.sub;
-          user.picture = profile.picture.replace('sz=50', 'sz=200');
-          user.displayName = profile.name;
-          user.save(function(err) {
-            var token = createJWT(user);
-            res.send({ token: token });
-          });
         });
-      }
+      });
     });
   });
 });
@@ -1085,15 +1187,33 @@ app.post('/auth/unlink', ensureAuthenticated, function(req, res) {
     return res.status(400).send({ message: 'Unknown OAuth Provider' });
   }
 
-  User.findById(req.user, function(err, user) {
-    if (!user) {
-      return res.status(400).send({ message: 'User Not Found' });
-    }
-    user[provider] = undefined;
-    user.save(function() {
-      res.status(200).end();
+  MongoPool.getInstance(function (db){
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('post(/auth/unlink) error: db.collection()');
+        return res.status(500).send({message: err.message });
+      }
+      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
+        if (!user) {
+          console.log('post(/auth/unlink) error: User Not Found');
+          return res.status(400).send({ message: 'User Not Found' });
+        }
+        user[provider] = undefined;
+        users.save(user, function(err, user) {
+          if (err) {
+            console.log('post(/auth/unlink) error: collection.save()');
+            return res.status(500).send({ message: err.message });
+          }
+          console.log('post(/auth/unlink) success: user = ' + user);
+          res.status(200).end();
+        });
+      });
     });
   });
+});
+
+app.post('/group/create', function(req, res) {
+  res.status(200).send({message: 'groupName = ' + req.body.name });
 });
 
 /**
