@@ -15,18 +15,20 @@ angular.module('controllers', [])
   };
 })
 
-.controller('HomeCtrl', function($scope, $http, $ionicPopup, BACKEND_URL) {
+.controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, BACKEND_URL) {
 
   $scope.newGroup = {};
 
   $scope.createGroup = function() {
     console.log($scope.newGroup.name);
     var options = {};
-    options.url = BACKEND_URL + '/group/create';
+    //options.url = BACKEND_URL + '/group/create';
+    options.url = 'http://localhost:3000' + '/group/create';
     options.data = $scope.newGroup;
     options.method = 'POST';
     $http(options)
       .then(function(response) {
+        $scope.newGroup = {};
         $ionicPopup.alert({
           title: 'Success',
           content: response.data.message
@@ -38,6 +40,10 @@ angular.module('controllers', [])
           content: error.data.message + ' ' + error.status
         });
     });
+  };
+
+  $scope.isAuthenticated = function() {
+    return $auth.isAuthenticated();
   };
 })
 
