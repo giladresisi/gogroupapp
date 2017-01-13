@@ -1,0 +1,35 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'C:\\Users\\Gilad\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'start' ]
+2 info using npm@4.0.5
+3 info using node@v5.3.0
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info lifecycle test-server@1.0.0~prestart: test-server@1.0.0
+6 silly lifecycle test-server@1.0.0~prestart: no script for prestart, continuing
+7 info lifecycle test-server@1.0.0~start: test-server@1.0.0
+8 verbose lifecycle test-server@1.0.0~start: unsafe-perm in lifecycle true
+9 verbose lifecycle test-server@1.0.0~start: PATH: C:\Users\Gilad\AppData\Roaming\npm\node_modules\npm\bin\node-gyp-bin;C:\Users\Gilad\workspace\GoGroupApp\node_modules\.bin;C:\Users\Gilad\AppData\Roaming\npm;C:\Program Files\nodejs\;C:\Perl64\site\bin;C:\Perl64\bin;C:\Program Files (x86)\iis express\PHP\v5.4;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files\MySQL\MySQL Server 5.1\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Java\jdk1.8.0_65\bin;C:\Program Files\apache-ant-1.9.6\bin;C:\Users\Gilad\AppData\Local\Android\sdk\platform-tools;C:\Users\Gilad\AppData\Local\Android\sdk\tools;C:\Program Files\Git\bin;C:\Program Files (x86)\Skype\Phone\;C:\Python34;C:\Python34\Scripts;C:\Program Files (x86)\PuTTY\;C:\Users\Gilad\AppData\Roaming\npm\node_modules\express;C:\Program Files\OpenSSH\bin;C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin;C:\Users\Gilad\AppData\Local\NASM;C:\Program Files\OpenSSL\bin;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files (x86)\Google\google_appengine\;C:\Users\Gilad\AppData\Roaming\npm;C:\Program Files\Java\jdk1.8.0_65\bin;%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;
+10 verbose lifecycle test-server@1.0.0~start: CWD: C:\Users\Gilad\workspace\GoGroupApp
+11 silly lifecycle test-server@1.0.0~start: Args: [ '/d /s /c', 'node server.js' ]
+12 verbose stack Error: kill ENOSYS
+12 verbose stack     at exports._errnoException (util.js:855:11)
+12 verbose stack     at process.kill (node.js:790:15)
+12 verbose stack     at process.listener (C:\Users\Gilad\AppData\Roaming\npm\node_modules\npm\node_modules\npmlog\node_modules\gauge\node_modules\signal-exit\index.js:86:15)
+12 verbose stack     at emitNone (events.js:72:20)
+12 verbose stack     at process.emit (events.js:166:7)
+12 verbose stack     at processEmit (C:\Users\Gilad\AppData\Roaming\npm\node_modules\npm\node_modules\npmlog\node_modules\gauge\node_modules\signal-exit\index.js:146:32)
+12 verbose stack     at processEmit (C:\Users\Gilad\AppData\Roaming\npm\node_modules\npm\node_modules\npm-registry-client\node_modules\npmlog\node_modules\gauge\node_modules\signal-exit\index.js:146:32)
+12 verbose stack     at Signal.wrap.onsignal (node.js:816:46)
+13 verbose cwd C:\Users\Gilad\workspace\GoGroupApp
+14 error Windows_NT 10.0.14393
+15 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Users\\Gilad\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js" "start"
+16 error node v5.3.0
+17 error npm  v4.0.5
+18 error code ENOSYS
+19 error errno ENOSYS
+20 error syscall kill
+21 error kill ENOSYS
+22 error If you need help, you may report this error at:
+22 error     <https://github.com/npm/npm/issues>
+23 verbose exit [ 1, true ]
