@@ -15,11 +15,35 @@ angular.module('controllers', [])
   };
 })
 
+.controller('GroupCtrl', function($scope, $auth) {
+
+  $scope.groupData = {};
+
+  $scope.groupData.name = 'Running In The Park';
+
+})
+
 .controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, BACKEND_URL) {
 
   $scope.newGroup = {};
 
+  $scope.groups = [
+    { name: 'Run Group 1', id: 1 },
+    { name: 'Run Group 2', id: 2 },
+    { name: 'Run Group 3', id: 3 },
+    { name: 'Run Group 4', id: 4 },
+    { name: 'Run Group 5', id: 5 },
+    { name: 'Run Group 6', id: 6 }
+  ];
+
   $scope.createGroup = function() {
+    if ((!$scope.newGroup.name) || ($scope.newGroup.name == "")) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: 'Type a name for the new group'
+      });
+      return;
+    }
     var options = {};
     options.url = BACKEND_URL + 'group/create';
     options.data = $scope.newGroup;
@@ -44,7 +68,6 @@ angular.module('controllers', [])
     return $auth.isAuthenticated();
   };
 })
-
 
 .controller('LogoutCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {
 

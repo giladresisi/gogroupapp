@@ -1,10 +1,18 @@
 <ion-view view-title="Home">
   <ion-content>
-  	<div ng-if="isAuthenticated()" class="item item-input-inset">
+  	<ion-item ng-if="isAuthenticated()" class="item item-input-inset">
   	  <label class="item item-input-wrapper">
       	<input type="text" ng-model="newGroup.name" placeholder="Group Name">
       </label>
-      <button ng-click="createGroup()" class="button button-small">Create Group</button>
-    </div>
+      <button ng-click="createGroup()" class="button button-small">Create<br>Group</button>
+    </ion-item>
+    <ion-item>
+	  <h2 class="title"><center>Existing Groups</center></h2>
+	</ion-item>
+	<ion-list>
+	  <ion-item ng-repeat="group in groups" href="#/groups/{{group.id}}">
+        {{group.name}}
+      </ion-item>
+	</ion-list>
   </ion-content>
 </ion-view>

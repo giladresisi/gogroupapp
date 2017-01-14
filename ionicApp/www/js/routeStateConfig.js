@@ -56,6 +56,16 @@ app
           templateUrl: 'templates/profile.html'
         }
       }
+    })
+    .state('app.group', {
+      cache: false,
+      url: '/groups/:groupId',
+      views: {
+        'menuContent': {
+          templateUrl: 'templates/group.html',
+          controller: 'GroupCtrl'
+        }
+      }
     });
     
   // if none of the above states are matched, use this as the fallback
