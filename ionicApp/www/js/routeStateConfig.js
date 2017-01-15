@@ -59,7 +59,7 @@ app
     })
     .state('app.group', {
       cache: false,
-      url: '/groups/:groupId',
+      url: '/groups/:groupName',
       views: {
         'menuContent': {
           templateUrl: 'templates/group.html',

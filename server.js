@@ -1257,7 +1257,31 @@ app.post('/auth/unlink', ensureAuthenticated, function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
- | Create Group and Add First User
+ | GET /group/all - Get all existing groups
+ |--------------------------------------------------------------------------
+ */
+app.get('/group/all', function(req, res) {
+  MongoPool.getInstance(function (db){
+    db.collection('groups', function(err, groups) {
+      if (err != null) {
+        console.log('get(/group/all) error: db.collection()');
+        return res.status(500).send({message: err.message });
+      }
+      groups.find({}, {name:1}).toArray(function(err, groupArr) {
+        if (err != null) {
+          console.log('get(/group/all) error: collection.find()');
+          return res.status(500).send({message: err.message });
+        }
+        console.log('get(/group/all) success: groupArr = ' + JSON.stringify(groupArr));
+        res.send(groupArr);
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
+ | POST /group/create - Create Group and Add First User
  |--------------------------------------------------------------------------
  */
 app.post('/group/create', ensureAuthenticated, function(req, res) {
@@ -1308,8 +1332,8 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
                     console.log('post(/group/create) error: collection.updateOne()');
                     return res.status(500).send({ message: err.message });
                   }
-                  console.log('post(/group/create) success: user = ' + user);
-                  return res.status(200).send({message: 'Group ' + req.body.name + ' created by user ' + user.displayName + '!'});
+                  console.log('post(/group/create) success: group = ' + JSON.stringify(group));
+                  return res.status(200).send(group.name);
                 });
               });
             });

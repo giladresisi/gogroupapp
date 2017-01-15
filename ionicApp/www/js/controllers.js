@@ -15,26 +15,21 @@ angular.module('controllers', [])
   };
 })
 
-.controller('GroupCtrl', function($scope, $auth) {
+.controller('GroupCtrl', function($scope, $auth, $state) {
 
   $scope.groupData = {};
 
-  $scope.groupData.name = 'Running In The Park';
+  console.log('state.params: ' + JSON.stringify($state.params));
+
+  $scope.groupData.name = $state.params.groupName;
 
 })
 
-.controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, BACKEND_URL) {
+.controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
 
   $scope.newGroup = {};
 
-  $scope.groups = [
-    { name: 'Run Group 1', id: 1 },
-    { name: 'Run Group 2', id: 2 },
-    { name: 'Run Group 3', id: 3 },
-    { name: 'Run Group 4', id: 4 },
-    { name: 'Run Group 5', id: 5 },
-    { name: 'Run Group 6', id: 6 }
-  ];
+  $scope.groups = [];
 
   $scope.createGroup = function() {
     if ((!$scope.newGroup.name) || ($scope.newGroup.name == "")) {
@@ -44,17 +39,18 @@ angular.module('controllers', [])
       });
       return;
     }
-    var options = {};
-    options.url = BACKEND_URL + 'group/create';
-    options.data = $scope.newGroup;
-    options.method = 'POST';
-    $http(options)
+    $http({
+      url: BACKEND_URL + 'group/create',
+      data: $scope.newGroup,
+      method: 'POST'
+    })
       .then(function(response) {
         $scope.newGroup = {};
         $ionicPopup.alert({
           title: 'Success',
-          content: response.data.message
+          content: 'Group ' + response.data + ' created!'
         });
+        $location.path('/groups/' + response.data);
       })
       .catch(function(error) {
         $ionicPopup.alert({
@@ -67,6 +63,24 @@ angular.module('controllers', [])
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
   };
+
+  $http({
+    url: BACKEND_URL + 'group/all',
+    method: 'GET'
+  })
+    .then(function(response) {
+      $scope.groups = response.data;
+      $ionicPopup.alert({
+        title: 'Success',
+        content: 'Retreived ' + $scope.groups.length + ' groups from DB!'
+      });
+    })
+    .catch(function(error) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: error.data.message + ' ' + error.status
+      });
+    })
 })
 
 .controller('LogoutCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {
