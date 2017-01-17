@@ -1,6 +1,6 @@
 angular.module('controllers', [])
 
-.controller('AppCtrl', function($scope, $auth) {
+.controller('MenuCtrl', function($scope, $auth) {
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -15,20 +15,33 @@ angular.module('controllers', [])
   };
 })
 
-.controller('GroupCtrl', function($scope, $auth, $state) {
+.controller('GroupCtrl', function($scope, $auth, $http, $state, BACKEND_URL) {
 
-  $scope.groupData = {};
+  $scope.groupName = {};
+  $scope.group = {};
 
-  console.log('state.params: ' + JSON.stringify($state.params));
+  $scope.isAuthenticated = function() {
+    return $auth.isAuthenticated();
+  };
 
-  $scope.groupData.name = $state.params.groupName;
+  $scope.groupName.name = $state.params.groupName;
 
+  if ($scope.isAuthenticated()) {
+    $scope.user = $http.get(BACKEND_URL + 'api/me');
+  }
+
+  $http.get(BACKEND_URL + 'group/single', {
+    params: {name: $state.params.groupName}
+  }).
+    then(function(response) {
+      $scope.group = response.data;
+    });
 })
 
 .controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
 
+  // Local vars
   $scope.newGroup = {};
-
   $scope.groups = [];
 
   $scope.createGroup = function() {
@@ -39,6 +52,7 @@ angular.module('controllers', [])
       });
       return;
     }
+    $scope.newGroup.sessions = [];
     $http({
       url: BACKEND_URL + 'group/create',
       data: $scope.newGroup,
@@ -64,10 +78,8 @@ angular.module('controllers', [])
     return $auth.isAuthenticated();
   };
 
-  $http({
-    url: BACKEND_URL + 'group/all',
-    method: 'GET'
-  })
+  // Get all existing groups on page load
+  $http.get(BACKEND_URL + 'group/all')
     .then(function(response) {
       $scope.groups = response.data;
       $ionicPopup.alert({
@@ -81,6 +93,9 @@ angular.module('controllers', [])
         content: error.data.message + ' ' + error.status
       });
     })
+
+  // Get all existing sessions (after current time) on page load
+
 })
 
 .controller('LogoutCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {

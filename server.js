@@ -126,12 +126,12 @@ app.get('/api/me', ensureAuthenticated, function(req, res) {
         console.log('get(/api/me) error: db.collection()');
         return res.status(500).send({message: err.message });
       }
-      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
+      users.findOne({"_id": new ObjectId(req.user)}, {fields:{_id:0}}, function(err, user) {
         if (err != null) {
           console.log('get(/api/me) error: collection.findOne()');
           return res.status(500).send({message: err.message });
         }
-        console.log('get(/api/me) success: user = ' + user);
+        console.log('get(/api/me) success: user = ' + JSON.stringify(user));
         res.send(user);
       });
     });
@@ -226,7 +226,8 @@ app.post('/auth/signup', function(req, res) {
             displayName: req.body.displayName,
             email: req.body.email,
             password: hashed,
-            groups: []
+            groups: [],
+            sessions: []
           };
           users.insertOne(user, function(err) {
             if (err) {
@@ -312,7 +313,8 @@ app.post('/auth/google', function(req, res) {
                 google: profile.sub,
                 picture: profile.picture.replace('sz=50', 'sz=200'),
                 displayName: profile.name,
-                groups: []
+                groups: [],
+                sessions: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -396,7 +398,8 @@ app.post('/auth/github', function(req, res) {
                 github: profile.id,
                 picture: profile.avatar_url,
                 displayName: profile.name,
-                groups: []
+                groups: [],
+                sessions: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -476,7 +479,8 @@ app.post('/auth/instagram', function(req, res) {
               instagram: body.user.id,
               picture: body.user.profile_picture,
               displayName: body.user.username,
-              groups: []
+              groups: [],
+              sessions: []
             }
             users.insertOne(user, function(err) {
               if (err) {
@@ -565,7 +569,8 @@ app.post('/auth/linkedin', function(req, res) {
                 linkedin: profile.id,
                 picture: profile.pictureUrl,
                 displayName: profile.firstName + ' ' + profile.lastName,
-                groups: []
+                groups: [],
+                sessions: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -654,7 +659,8 @@ app.post('/auth/live', function(req, res) {
               var user = {
                 live: profile.id,
                 displayName: profile.name,
-                groups: []
+                groups: [],
+                sessions: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -743,7 +749,8 @@ app.post('/auth/facebook', function(req, res) {
                 facebook: profile.id,
                 picture: 'https://graph.facebook.com/' + profile.id + '/picture?type=large',
                 displayName: profile.name,
-                groups: []
+                groups: [],
+                sessions: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -1281,6 +1288,30 @@ app.get('/group/all', function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
+ | GET /group/single - Get Data of a Single Group
+ |--------------------------------------------------------------------------
+ */
+app.get('/group/single', function(req, res) {
+  MongoPool.getInstance(function (db){
+    db.collection('groups', function(err, groups) {
+      if (err != null) {
+        console.log('get(/group/single) error: db.collection()');
+        return res.status(500).send({message: err.message });
+      }
+      groups.findOne({name: req.query.name}, {fields:{_id:0, users:0}}, function(err, group) {
+        if (err != null) {
+          console.log('get(/group/single) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        console.log('get(/group/single) success: group = ' + JSON.stringify(group));
+        res.send(group);
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
  | POST /group/create - Create Group and Add First User
  |--------------------------------------------------------------------------
  */
@@ -1308,7 +1339,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
             }
             groups.findOne({name: req.body.name}, function(err, existingGroup) {
               if (err != null) {
-                console.log('post(/group/create) error: collection.findOne(groupName)');
+                console.log('post(/group/create) error: collection.findOne(name)');
                 return res.status(500).send({message: err.message });
               }
               if (existingGroup) {
@@ -1317,7 +1348,8 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
               }
               var group = {
                 name: req.body.name,
-                users: [ new ObjectId(req.user) ]
+                users: [ user._id ],
+                sessions: []
               };
               groups.insertOne(group, function(err) {
                 if (err) {
@@ -1325,7 +1357,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
                   return res.status(500).send({ message: err.message });
                 }
                 user.groups.push(group._id);
-                users.updateOne({"_id": new ObjectId(req.user)}, {$set:{
+                users.updateOne({"_id": user._id}, {$set:{
                   groups: user.groups
                 }}, function(err) {
                   if (err) {
@@ -1336,6 +1368,142 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
                   return res.status(200).send(group.name);
                 });
               });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
+ | POST /group/join - Add User to Existing Group
+ |--------------------------------------------------------------------------
+ */
+app.post('/group/join', ensureAuthenticated, function(req, res) {
+  MongoPool.getInstance(function (db) {
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('post(/group/join) error: db.collection(users)');
+        return res.status(500).send({message: err.message });
+      }
+      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
+        if (err != null) {
+          console.log('post(/group/join) error: collection.findOne(userId)');
+          return res.status(500).send({message: err.message });
+        }
+        if (!user) {
+          console.log('post(/group/join) error: No such user');
+          return res.status(409).send({ message: 'No such user' });
+        }
+        MongoPool.getInstance(function (db2) {
+          db2.collection('groups', function(err, groups) {
+            if (err != null) {
+              console.log('post(/group/join) error: db.collection(groups)');
+              return res.status(500).send({message: err.message });
+            }
+            groups.findOne({name: req.body.groupName}, function(err, group) {
+              if (err != null) {
+                console.log('post(/group/join) error: collection.findOne(groupName)');
+                return res.status(500).send({message: err.message });
+              }
+              if (!group) {
+                console.log('post(/group/join) error: No such group');
+                return res.status(409).send({ message: 'No such group' });
+              }
+              group.users.push(user._id);
+              groups.updateOne({"_id": group._id}, {$set:{
+                users: group.users
+              }}, function(err) {
+                if (err) {
+                  console.log('post(/group/join) error: collection.updateOne()');
+                  return res.status(500).send({ message: err.message });
+                }
+                user.groups.push(group._id);
+                users.updateOne({"_id": user._id}, {$set:{
+                  groups: user.groups
+                }}, function(err) {
+                  if (err) {
+                    console.log('post(/group/join) error: collection.updateOne()');
+                    return res.status(500).send({ message: err.message });
+                  }
+                  console.log('post(/group/join) success: group = ' + JSON.stringify(group));
+                  return res.status(200).send(group.name);
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
+ | POST /group/leave - Remove User from Existing Group
+ |--------------------------------------------------------------------------
+ */
+app.post('/group/leave', ensureAuthenticated, function(req, res) {
+  MongoPool.getInstance(function (db) {
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('post(/group/leave) error: db.collection(users)');
+        return res.status(500).send({message: err.message });
+      }
+      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
+        if (err != null) {
+          console.log('post(/group/leave) error: collection.findOne(userId)');
+          return res.status(500).send({message: err.message });
+        }
+        if (!user) {
+          console.log('post(/group/leave) error: No such user');
+          return res.status(409).send({ message: 'No such user' });
+        }
+        MongoPool.getInstance(function (db2) {
+          db2.collection('groups', function(err, groups) {
+            if (err != null) {
+              console.log('post(/group/leave) error: db.collection(groups)');
+              return res.status(500).send({message: err.message });
+            }
+            groups.findOne({name: req.body.groupName}, function(err, group) {
+              if (err != null) {
+                console.log('post(/group/leave) error: collection.findOne(groupName)');
+                return res.status(500).send({message: err.message });
+              }
+              if (!group) {
+                console.log('post(/group/leave) error: No such group');
+                return res.status(409).send({ message: 'No such group' });
+              }
+              for (i in group.users) {
+                if (group.users[i] == user._id) {
+                  group.users.splice(i, 1);
+                  groups.updateOne({"_id": group._id}, {$set:{
+                    users: group.users
+                  }}, function(err) {
+                    if (err) {
+                      console.log('post(/group/leave) error: collection.updateOne()');
+                      return res.status(500).send({ message: err.message });
+                    }
+                    for (j in user.groups) {
+                      if (user.groups[j] == group._id) {
+                        user.groups.splice(j, 1);
+                        users.updateOne({"_id": user._id}, {$set:{
+                          groups: user.groups
+                        }}, function(err) {
+                          if (err) {
+                            console.log('post(/group/leave) error: collection.updateOne()');
+                            return res.status(500).send({ message: err.message });
+                          }
+                          console.log('post(/group/leave) success: group = ' + JSON.stringify(group));
+                          return res.status(200).send(group.name);
+                        });
+                      }
+                    }
+                  });
+                }
+              }
             });
           });
         });
