@@ -126,7 +126,7 @@ app.get('/api/me', ensureAuthenticated, function(req, res) {
         console.log('get(/api/me) error: db.collection()');
         return res.status(500).send({message: err.message });
       }
-      users.findOne({"_id": new ObjectId(req.user)}, {fields:{_id:0}}, function(err, user) {
+      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
         if (err != null) {
           console.log('get(/api/me) error: collection.findOne()');
           return res.status(500).send({message: err.message });
@@ -1298,7 +1298,7 @@ app.get('/group/single', function(req, res) {
         console.log('get(/group/single) error: db.collection()');
         return res.status(500).send({message: err.message });
       }
-      groups.findOne({name: req.query.name}, {fields:{_id:0, users:0}}, function(err, group) {
+      groups.findOne({name: req.query.name}, {fields:{users:0}}, function(err, group) {
         if (err != null) {
           console.log('get(/group/single) error: collection.findOne()');
           return res.status(500).send({message: err.message });
@@ -1476,8 +1476,8 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
                 console.log('post(/group/leave) error: No such group');
                 return res.status(409).send({ message: 'No such group' });
               }
-              for (i in group.users) {
-                if (group.users[i] == user._id) {
+              for (i = 0; i < group.users.length; i++) {
+                if (group.users[i].toString() == user._id.toString()) {
                   group.users.splice(i, 1);
                   groups.updateOne({"_id": group._id}, {$set:{
                     users: group.users
@@ -1486,8 +1486,8 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
                       console.log('post(/group/leave) error: collection.updateOne()');
                       return res.status(500).send({ message: err.message });
                     }
-                    for (j in user.groups) {
-                      if (user.groups[j] == group._id) {
+                    for (j = 0; j < user.groups.length; j++) {
+                      if (user.groups[j].toString() == group._id.toString()) {
                         user.groups.splice(j, 1);
                         users.updateOne({"_id": user._id}, {$set:{
                           groups: user.groups
@@ -1499,9 +1499,11 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
                           console.log('post(/group/leave) success: group = ' + JSON.stringify(group));
                           return res.status(200).send(group.name);
                         });
+                        break;
                       }
                     }
                   });
+                  break;
                 }
               }
             });

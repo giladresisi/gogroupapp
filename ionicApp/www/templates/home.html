@@ -7,12 +7,12 @@
       <button ng-click="createGroup()" class="button button-small">Create<br>Group</button>
     </ion-item>
     <ion-item>
-	  <h2 class="title"><center>Existing Groups</center></h2>
-	</ion-item>
-	<ion-list>
-	  <ion-item ng-repeat="group in groups" href="#/groups/{{group.name}}">
-      {{group.name}}
-    </ion-item>
-	</ion-list>
+  	  <h2 class="title"><center>Existing Groups</center></h2>
+  	</ion-item>
+  	<ion-list>
+  	  <ion-item ng-repeat="group in groups" href="#/groups/{{group.name}}">
+        {{group.name}}
+      </ion-item>
+  	</ion-list>
   </ion-content>
 </ion-view>

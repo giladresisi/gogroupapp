@@ -19,23 +19,74 @@ angular.module('controllers', [])
 
   $scope.groupName = {};
   $scope.group = {};
+  $scope.user = {};
+  $scope.isRegistered = false;
 
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
   };
 
+  $scope.onRegisteredChange = function(checked) {
+    console.log('New value: ' + checked);
+    if (checked) {
+      $http({
+        url: BACKEND_URL + 'group/join',
+        data: {groupName: $scope.groupName.name},
+        method: 'POST'
+      })
+        .then(function(response) {
+          console.log('Joining group ' + response.data + ' Succeeded!');
+        })
+        .catch(function(error) {
+          console.log('Joining group failed! ' + error.data.message + ' ' + error.status);
+        });
+    } else {
+      $http({
+        url: BACKEND_URL + 'group/leave',
+        data: {groupName: $scope.groupName.name},
+        method: 'POST'
+      })
+        .then(function(response) {
+          console.log('Leaving group ' + response.data + ' Succeeded!');
+        })
+        .catch(function(error) {
+          console.log('Leaving group failed! ' + error.data.message + ' ' + error.status);
+        });
+    }
+  };
+
   $scope.groupName.name = $state.params.groupName;
 
-  if ($scope.isAuthenticated()) {
-    $scope.user = $http.get(BACKEND_URL + 'api/me');
-  }
-
   $http.get(BACKEND_URL + 'group/single', {
-    params: {name: $state.params.groupName}
-  }).
-    then(function(response) {
+    params: {name: $scope.groupName.name}
+  })
+    .then(function(response) {
       $scope.group = response.data;
+      console.log('group._id: ' + $scope.group._id);
+    })
+    .catch(function(error) {
+      console.log(error.data.message + ' ' + error.status);
     });
+
+  if ($scope.isAuthenticated()) {
+    $http.get(BACKEND_URL + 'api/me')
+      .then(function(response) {
+        $scope.user = response.data;
+        console.log('User: ' + JSON.stringify($scope.user));
+        console.log('User registered to groups:');
+        for (i = 0; i < $scope.user.groups.length; i++) {
+          console.log('groupId: ' + $scope.user.groups[i]);
+          if ($scope.user.groups[i] == $scope.group._id) {
+            $scope.isRegistered = true;
+            break;
+          }
+        }
+        console.log('Registered: ' + $scope.isRegistered);
+      })
+      .catch(function(error) {
+        console.log(error.data.message + ' ' + error.status);
+      });
+  }
 })
 
 .controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
