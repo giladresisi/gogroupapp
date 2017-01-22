@@ -33,25 +33,13 @@ angular.module('controllers', [])
         url: BACKEND_URL + 'group/join',
         data: {groupName: $scope.groupName.name},
         method: 'POST'
-      })
-        .then(function(response) {
-          console.log('Joining group ' + response.data + ' Succeeded!');
-        })
-        .catch(function(error) {
-          console.log('Joining group failed! ' + error.data.message + ' ' + error.status);
-        });
+      });
     } else {
       $http({
         url: BACKEND_URL + 'group/leave',
         data: {groupName: $scope.groupName.name},
         method: 'POST'
-      })
-        .then(function(response) {
-          console.log('Leaving group ' + response.data + ' Succeeded!');
-        })
-        .catch(function(error) {
-          console.log('Leaving group failed! ' + error.data.message + ' ' + error.status);
-        });
+      });
     }
   };
 
@@ -62,34 +50,23 @@ angular.module('controllers', [])
   })
     .then(function(response) {
       $scope.group = response.data;
-      console.log('group._id: ' + $scope.group._id);
-    })
-    .catch(function(error) {
-      console.log(error.data.message + ' ' + error.status);
     });
 
   if ($scope.isAuthenticated()) {
     $http.get(BACKEND_URL + 'api/me')
       .then(function(response) {
         $scope.user = response.data;
-        console.log('User: ' + JSON.stringify($scope.user));
-        console.log('User registered to groups:');
         for (i = 0; i < $scope.user.groups.length; i++) {
-          console.log('groupId: ' + $scope.user.groups[i]);
-          if ($scope.user.groups[i] == $scope.group._id) {
+          if ($scope.user.groups[i].toString() == $scope.group._id.toString()) {
             $scope.isRegistered = true;
             break;
           }
         }
-        console.log('Registered: ' + $scope.isRegistered);
-      })
-      .catch(function(error) {
-        console.log(error.data.message + ' ' + error.status);
       });
   }
 })
 
-.controller('HomeCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
+.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
 
   // Local vars
   $scope.newGroup = {};
@@ -111,18 +88,8 @@ angular.module('controllers', [])
     })
       .then(function(response) {
         $scope.newGroup = {};
-        $ionicPopup.alert({
-          title: 'Success',
-          content: 'Group ' + response.data + ' created!'
-        });
         $location.path('/groups/' + response.data);
-      })
-      .catch(function(error) {
-        $ionicPopup.alert({
-          title: 'Error',
-          content: error.data.message + ' ' + error.status
-        });
-    });
+      });
   };
 
   $scope.isAuthenticated = function() {
@@ -133,23 +100,52 @@ angular.module('controllers', [])
   $http.get(BACKEND_URL + 'group/all')
     .then(function(response) {
       $scope.groups = response.data;
-      $ionicPopup.alert({
-        title: 'Success',
-        content: 'Retreived ' + $scope.groups.length + ' groups from DB!'
-      });
-    })
-    .catch(function(error) {
-      $ionicPopup.alert({
-        title: 'Error',
-        content: error.data.message + ' ' + error.status
-      });
-    })
-
-  // Get all existing sessions (after current time) on page load
-
+    });
 })
 
-.controller('LogoutCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {
+.controller('SessionsCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
+
+// Local vars
+  $scope.newSession = {};
+  $scope.sessions = [];
+
+  $scope.createSession = function() {
+    if ((!$scope.newSession) || ($scope.newSession.description == "")) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: 'Type a description for the new session'
+      });
+      return;
+    }
+    $http({
+      url: BACKEND_URL + 'session/create',
+      data: $scope.newSession,
+      method: 'POST'
+    })
+      .then(function(response) {
+        $scope.newSession = {};
+        console.log('Created session: ' + JSON.stringify(response));
+        $scope.sessions.push(response.data);
+      }).
+      catch(function(error) {
+        console.log('Create session error: ' + error.data.message + ' ' + error.status);
+      });
+  };
+
+  $scope.isAuthenticated = function() {
+    return $auth.isAuthenticated();
+  };
+
+  // Get all existing sessions on page load
+  $http.get(BACKEND_URL + 'session/all')
+    .then(function(response) {
+      $scope.sessions = response.data;
+      console.log('# of sessions: ' + $scope.sessions.length);
+      console.log('Sessions: ' + JSON.stringify($scope.sessions));
+    });
+})
+
+.controller('LogoutCtrl', function($scope, $auth, $state, $ionicHistory) {
 
   // Make sure the user is currently authenticated (else - do nothing)
   if (!$auth.isAuthenticated()) {
@@ -159,22 +155,18 @@ angular.module('controllers', [])
   // Log out current user using auth module
   $auth.logout()
     .then(function() {
-      $ionicPopup.alert({
-        title: 'Success',
-        content: 'Logged out!'
-      });
       
       // Erase history so when navigating to home page there won't be a back button icon
       $ionicHistory.nextViewOptions({
         historyRoot: true
       });
 
-      // Navigate back to home page using the ap states
-      $state.go('app.home');
+      // Navigate back to sessions page using the ap states
+      $state.go('app.sessions');
     });
 })
 
-.controller('SignupCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {
+.controller('SignupCtrl', function($scope, $auth, $state, $ionicHistory) {
 
   $scope.signupData = {};
 
@@ -185,29 +177,19 @@ angular.module('controllers', [])
     $auth.signup($scope.signupData)
       .then(function(response) {
         $auth.setToken(response);
-        $ionicPopup.alert({
-          title: 'Success',
-          content: 'Successful email & pass signup!'
-        });
 
         // Erase history so when navigating to home page there won't be a back button icon
         $ionicHistory.nextViewOptions({
           historyRoot: true
         });
 
-        // Navigate back to home page using the ap states
-        $state.go('app.home');
-      })
-      .catch(function(response) {
-        $ionicPopup.alert({
-          title: 'Error',
-          content: response.data.message
-        });
+        // Navigate back to sessions page using the ap states
+        $state.go('app.sessions');
       });
   };
 })
 
-.controller('LoginCtrl', function($scope, $ionicPopup, $auth, $state, $ionicHistory) {
+.controller('LoginCtrl', function($scope, $auth, $state, $ionicHistory) {
 
   // Init login data structs
   $scope.loginData = {};
@@ -220,8 +202,8 @@ angular.module('controllers', [])
       historyRoot: true
     });
 
-    // Navigate back to home page using the ap states
-    $state.go('app.home');
+    // Navigate back to sessions page using the ap states
+    $state.go('app.sessions');
   };
 
   // Perform the login action when the user submits the login form
@@ -230,19 +212,9 @@ angular.module('controllers', [])
     // Login using the auth module
     $auth.login($scope.loginData)
       .then(function() {
-        $ionicPopup.alert({
-          title: 'Success',
-          content: 'Successful email & pass login!'
-        });
 
         // Navigate back to home page after successful login
         $scope.closeLogin();
-      })
-      .catch(function(error) {
-        $ionicPopup.alert({
-          title: 'Error',
-          content: error.data.message + ' ' + error.status
-        });
       });
   };
 
@@ -252,19 +224,9 @@ angular.module('controllers', [])
     // Authenticate with provider using the auth module
     $auth.authenticate(provider)
       .then(function() {
-        $ionicPopup.alert({
-          title: 'Success',
-          content: 'Successful auth with ' + provider + '!'
-        });
 
         // Navigate back to home page after successful authentication
         $scope.closeLogin();
-      })
-      .catch(function(error) {
-        $ionicPopup.alert({
-          title: 'Error',
-          content: error.message || (error.data && error.data.message) || error
-        });
       });
   };
 });

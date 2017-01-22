@@ -9,16 +9,6 @@ app
       templateUrl: 'templates/menu.html',
       controller: 'MenuCtrl'
     })
-    .state('app.home', {
-      cache: false,
-      url: '/',
-      views: {
-        'menuContent': {
-          templateUrl: 'templates/home.html',
-          controller: 'HomeCtrl'
-        }
-      }
-    })
     .state('app.signup', {
       cache: false,
       url: '/signup',
@@ -57,9 +47,29 @@ app
         }
       }
     })
+    .state('app.sessions', {
+      cache: false,
+      url: '/sessions',
+      views: {
+        'menuContent': {
+          templateUrl: 'templates/sessions.html',
+          controller: 'SessionsCtrl'
+        }
+      }
+    })
+    .state('app.groups', {
+      cache: false,
+      url: '/groups',
+      views: {
+        'menuContent': {
+          templateUrl: 'templates/groups.html',
+          controller: 'GroupsCtrl'
+        }
+      }
+    })
     .state('app.group', {
       cache: false,
-      url: '/groups/:groupName',
+      url: '/group/:groupName',
       views: {
         'menuContent': {
           templateUrl: 'templates/group.html',
@@ -69,5 +79,5 @@ app
     });
     
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/');
+  $urlRouterProvider.otherwise('/sessions');
 });
