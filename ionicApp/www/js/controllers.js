@@ -20,10 +20,16 @@ angular.module('controllers', [])
   $scope.groupName = {};
   $scope.group = {};
   $scope.user = {};
+  $scope.newSession = {};
+  $scope.sessions = [];
   $scope.isRegistered = false;
 
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
+  };
+
+  $scope.isMember = function() {
+    return $scope.isRegistered;
   };
 
   $scope.onRegisteredChange = function(checked) {
@@ -43,6 +49,30 @@ angular.module('controllers', [])
     }
   };
 
+  $scope.createSession = function() {
+    if ((!$scope.newSession) || ($scope.newSession.title == "")) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: 'Type a title for the new session'
+      });
+      return;
+    }
+    $scope.newSession.groupId = $scope.group._id;
+    $http({
+      url: BACKEND_URL + 'session/create',
+      data: $scope.newSession,
+      method: 'POST'
+    })
+      .then(function(response) {
+        $scope.newSession = {};
+        console.log('Created session: ' + JSON.stringify(response));
+        $scope.sessions.push(response.data);
+      }).
+      catch(function(error) {
+        console.log('Create session error: ' + error.data.message + ' ' + error.status);
+      });
+  };
+
   $scope.groupName.name = $state.params.groupName;
 
   $http.get(BACKEND_URL + 'group/single', {
@@ -50,6 +80,14 @@ angular.module('controllers', [])
   })
     .then(function(response) {
       $scope.group = response.data;
+    });
+
+  $http.get(BACKEND_URL + 'session/group', {
+    params: {groupName: $scope.groupName.name}
+  })
+    .then(function(response) {
+      $scope.sessions = response.data;
+      console.log('response: ' + JSON.stringify(response.data));
     });
 
   if ($scope.isAuthenticated()) {
@@ -105,15 +143,15 @@ angular.module('controllers', [])
 
 .controller('SessionsCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
 
-// Local vars
+  // Local vars
   $scope.newSession = {};
   $scope.sessions = [];
 
   $scope.createSession = function() {
-    if ((!$scope.newSession) || ($scope.newSession.description == "")) {
+    if ((!$scope.newSession) || ($scope.newSession.title == "")) {
       $ionicPopup.alert({
         title: 'Error',
-        content: 'Type a description for the new session'
+        content: 'Type a title for the new session'
       });
       return;
     }
@@ -140,8 +178,12 @@ angular.module('controllers', [])
   $http.get(BACKEND_URL + 'session/all')
     .then(function(response) {
       $scope.sessions = response.data;
-      console.log('# of sessions: ' + $scope.sessions.length);
-      console.log('Sessions: ' + JSON.stringify($scope.sessions));
+      for (i = 0; i < $scope.sessions.length; i++) {
+        $scope.sessions[i].groupStr = "";
+        if ($scope.sessions[i].groupId) {
+          $scope.sessions[i].groupStr = ", group ID: " + $scope.sessions[i].groupId;
+        }
+      }
     });
 })
 

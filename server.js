@@ -1274,7 +1274,7 @@ app.get('/group/all', function(req, res) {
         console.log('get(/group/all) error: db.collection()');
         return res.status(500).send({message: err.message });
       }
-      groups.find({}, {name:1}).toArray(function(err, groupArr) {
+      groups.find({}, {name:1,users:1}).toArray(function(err, groupArr) {
         if (err != null) {
           console.log('get(/group/all) error: collection.find()');
           return res.status(500).send({message: err.message });
@@ -1553,59 +1553,61 @@ app.get('/session/all', function(req, res) {
   MongoPool.getInstance(function (db) {
     db.collection('sessions', function(err, sessions) {
       if (err != null) {
-        console.log('get(/sessions/all) error: db.collection(sessions)');
+        console.log('get(/session/all) error: db.collection(sessions)');
         return res.status(500).send({message: err.message });
       }
-      sessions.find({}, {_id:1,description:1,userIds:1,groupId:1}).toArray(function(err, sessionArr) {
+      sessions.find({}, {_id:1,title:1,userIds:1,groupId:1}).toArray(function(err, sessionArr) {
         if (err != null) {
-          console.log('get(/sessions/all) error: collection.find()');
+          console.log('get(/session/all) error: collection.find()');
           return res.status(500).send({message: err.message });
         }
-        db.collection('users', function(err, users) {
-          if (err != null) {
-            console.log('get(/sessions/all) error: db.collection(users)');
-            return res.status(500).send({message: err.message });
-          }
-          db.collection('groups', function(err, groups) {
-            if (err != null) {
-              console.log('get(/sessions/all) error: db.collection(groups)');
-              return res.status(500).send({message: err.message });
-            }
-            for (i = 0; i < sessionArr.length; i++) {
-              if (sessionArr[i].groupId) {
-                groups.findOne({"_id": new ObjectId(sessionArr[i].groupId)}, function(err, group) {
-                  if (err != null) {
-                    console.log('get(/sessions/all) error: collection.findOne(groupId)');
-                    return res.status(500).send({message: err.message });
-                  }
-                  if (!group) {
-                    console.log('get(/sessions/all) error: No such group');
-                    return res.status(409).send({ message: 'No such group' });
-                  }
-                  sessionArr[i].groupName = group.name;
-                });
-              } else {
-                sessionArr[i].userNames = [];
-                console.log('Session[i]: ' + JSON.stringify(sessionArr[i]));
-                for (j = 0; j < sessionArr[i].userIds.length; j++) {
-                  users.findOne({"_id": new ObjectId(sessionArr[i].userIds[j])}, function(err, user) {
-                    if (err != null) {
-                      console.log('get(/sessions/all) error: collection.findOne(userId)');
-                      return res.status(500).send({message: err.message });
-                    }
-                    if (!user) {
-                      console.log('get(/sessions/all) error: No such user');
-                      return res.status(409).send({ message: 'No such user' });
-                    }
-                    //sessionArr[i].userNames.push(user.displayName);
-                  });
-                }
-              }
-            }
+        // db.collection('users', function(err, users) {
+        //   if (err != null) {
+        //     console.log('get(/session/all) error: db.collection(users)');
+        //     return res.status(500).send({message: err.message });
+        //   }
+          // db.collection('groups', function(err, groups) {
+          //   if (err != null) {
+          //     console.log('get(/session/all) error: db.collection(groups)');
+          //     return res.status(500).send({message: err.message });
+          //   }
+          //   for (i = 0; i < sessionArr.length; i++) {
+          //     if (sessionArr[i].groupId) {
+          //       groups.findOne({"_id": new ObjectId(sessionArr[i].groupId)}, function(err, group) {
+          //         if (err != null) {
+          //           console.log('get(/session/all) error: collection.findOne(groupId)');
+          //           return res.status(500).send({message: err.message });
+          //         }
+          //         if (!group) {
+          //           console.log('get(/session/all) error: No such group');
+          //           return res.status(409).send({ message: 'No such group' });
+          //         }
+          //         sessionArr[i].groupName = group.name;
+          //       });
+          //     }
+              // else {
+              //   var userNames = [];
+              //   console.log('Session[i]: ' + JSON.stringify(sessionArr[i]));
+              //   for (j = 0; j < sessionArr[i].userIds.length; j++) {
+              //     users.findOne({"_id": new ObjectId(sessionArr[i].userIds[j])}, function(err, user) {
+              //       if (err != null) {
+              //         console.log('get(/session/all) error: collection.findOne(userId)');
+              //         return res.status(500).send({message: err.message });
+              //       }
+              //       if (!user) {
+              //         console.log('get(/session/all) error: No such user');
+              //         return res.status(409).send({ message: 'No such user' });
+              //       }
+              //       userNames.push(user.displayName);
+              //     });
+              //   }
+              //   sessionArr[i].userNames = userNames;
+              // }
+            // }
             console.log('get(/sessions/all) success: sessionArr = ' + JSON.stringify(sessionArr));
             res.send(sessionArr);
-          });
-        });
+          // });
+        // });
       });
     });
   });
@@ -1631,7 +1633,7 @@ app.get('/session/user', ensureAuthenticated, function(req, res) {
           }
           sessionArr = [];
           for (i = 0; i < user.sessions.length; i++) {
-            sessions.findOne({"_id": new ObjectId(user.sessions[i])}, {fields:{_id:1,description:1}}, function(err, session) {
+            sessions.findOne({"_id": new ObjectId(user.sessions[i])}, {fields:{_id:1,title:1}}, function(err, session) {
               if (err != null) {
                 console.log('get(/session/user) error: collection.findOne(sessionId)');
                 return res.status(500).send({message: err.message});
@@ -1653,19 +1655,31 @@ app.get('/session/user', ensureAuthenticated, function(req, res) {
  |--------------------------------------------------------------------------
  */
 app.get('/session/group', function(req, res) {
-  MongoPool.getInstance(function (db){
-    db.collection('sessions', function(err, sessions) {
+  MongoPool.getInstance(function (db) {
+    db.collection('groups', function(err, groups) {
       if (err != null) {
-        console.log('get(/sessions/group) error: db.collection()');
+        console.log('get(/session/group) error: db.collection(groups)');
         return res.status(500).send({message: err.message });
       }
-      sessions.find({groupId:req.body.groupId}, {_id:1,description:1}).toArray(function(err, sessionArr) {
+      groups.findOne({name:req.query.groupName}, {fields:{_id:1}}, function(err, group) {
         if (err != null) {
-          console.log('get(/sessions/group) error: collection.find()');
+          console.log('get(/session/group) error: collection.findOne(groupName)');
           return res.status(500).send({message: err.message });
         }
-        console.log('get(/sessions/group) success: sessionArr = ' + JSON.stringify(sessionArr));
-        res.send(sessionArr);
+        db.collection('sessions', function(err, sessions) {
+          if (err != null) {
+            console.log('get(/session/group) error: db.collection(sessions)');
+            return res.status(500).send({message: err.message });
+          }
+          sessions.find({groupId:group._id.toString()}, {_id:1,title:1,userIds:1}).toArray(function(err, sessionArr) {
+            if (err != null) {
+              console.log('get(/session/group) error: collection.find()');
+              return res.status(500).send({message: err.message });
+            }
+            console.log('get(/session/group) success: sessionArr = ' + JSON.stringify(sessionArr));
+            res.send(sessionArr);
+          });
+        });
       });
     });
   });
@@ -1698,7 +1712,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
             return res.status(500).send({message: err.message });
           }
           var session = {
-            description: req.body.description,
+            title: req.body.title,
             userIds: [ user._id ]
           };
           if (req.body.groupId) {
@@ -1718,23 +1732,29 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                 return res.status(500).send({ message: err.message });
               }
               if (session.groupId) {
-                groups.findOne({"_id": new ObjectId(session.groupId)}, function(err, group) {
+                db.collection('groups', function(err, groups) {
                   if (err != null) {
-                    console.log('post(/session/create) error: collection.findOne(groupId)');
+                    console.log('post(/session/create) error: db.collection(groups)');
                     return res.status(500).send({message: err.message });
                   }
-                  if (!group) {
-                    console.log('post(/session/create) error: No such group');
-                    return res.status(409).send({ message: 'No such group' });
-                  }
-                  group.sessions.push(session._id);
-                  groups.updateOne({"_id": group._id}, {$set: {
-                    sessions: group.sessions
-                  }}, function(err) {
-                    if (err) {
-                      console.log('post(/session/create) error: collection.updateOne(group)');
-                      return res.status(500).send({ message: err.message });
+                  groups.findOne({"_id": new ObjectId(session.groupId)}, function(err, group) {
+                    if (err != null) {
+                      console.log('post(/session/create) error: collection.findOne(groupId)');
+                      return res.status(500).send({message: err.message });
                     }
+                    if (!group) {
+                      console.log('post(/session/create) error: No such group');
+                      return res.status(409).send({ message: 'No such group' });
+                    }
+                    group.sessions.push(session._id);
+                    groups.updateOne({"_id": group._id}, {$set: {
+                      sessions: group.sessions
+                    }}, function(err) {
+                      if (err) {
+                        console.log('post(/session/create) error: collection.updateOne(group)');
+                        return res.status(500).send({ message: err.message });
+                      }
+                    });
                   });
                 });
               }

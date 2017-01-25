@@ -11,7 +11,7 @@
     </ion-item>
     <ion-list>
       <ion-item ng-repeat="group in groups" href="#/group/{{group.name}}">
-        {{group.name}}
+        {{group.name}}, {{group.users.length}} members
       </ion-item>
     </ion-list>
   </ion-content>
