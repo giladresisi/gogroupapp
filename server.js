@@ -1561,57 +1561,44 @@ app.get('/session/all', function(req, res) {
           console.log('get(/session/all) error: collection.find()');
           return res.status(500).send({message: err.message });
         }
-        // db.collection('users', function(err, users) {
-        //   if (err != null) {
-        //     console.log('get(/session/all) error: db.collection(users)');
-        //     return res.status(500).send({message: err.message });
-        //   }
-          // db.collection('groups', function(err, groups) {
-          //   if (err != null) {
-          //     console.log('get(/session/all) error: db.collection(groups)');
-          //     return res.status(500).send({message: err.message });
-          //   }
-          //   for (i = 0; i < sessionArr.length; i++) {
-          //     if (sessionArr[i].groupId) {
-          //       groups.findOne({"_id": new ObjectId(sessionArr[i].groupId)}, function(err, group) {
-          //         if (err != null) {
-          //           console.log('get(/session/all) error: collection.findOne(groupId)');
-          //           return res.status(500).send({message: err.message });
-          //         }
-          //         if (!group) {
-          //           console.log('get(/session/all) error: No such group');
-          //           return res.status(409).send({ message: 'No such group' });
-          //         }
-          //         sessionArr[i].groupName = group.name;
-          //       });
-          //     }
-              // else {
-              //   var userNames = [];
-              //   console.log('Session[i]: ' + JSON.stringify(sessionArr[i]));
-              //   for (j = 0; j < sessionArr[i].userIds.length; j++) {
-              //     users.findOne({"_id": new ObjectId(sessionArr[i].userIds[j])}, function(err, user) {
-              //       if (err != null) {
-              //         console.log('get(/session/all) error: collection.findOne(userId)');
-              //         return res.status(500).send({message: err.message });
-              //       }
-              //       if (!user) {
-              //         console.log('get(/session/all) error: No such user');
-              //         return res.status(409).send({ message: 'No such user' });
-              //       }
-              //       userNames.push(user.displayName);
-              //     });
-              //   }
-              //   sessionArr[i].userNames = userNames;
-              // }
-            // }
-            console.log('get(/sessions/all) success: sessionArr = ' + JSON.stringify(sessionArr));
+        db.collection('groups', function(err, groups) {
+          if (err != null) {
+            console.log('get(/session/all) error: db.collection(groups)');
+            return res.status(500).send({message: err.message });
+          }
+          addGroupName(groups, sessionArr, 0, function(sessionArr, status, result) {
+            if (status) {
+              return res.status(status).send(result);
+            }
             res.send(sessionArr);
-          // });
-        // });
+          });
+        });
       });
     });
   });
 });
+function addGroupName(groups, sessionArr, i, callback) {
+  if (i == sessionArr.length) {
+    console.log('get(/sessions/all) success: sessionArr = ' + JSON.stringify(sessionArr));
+    callback(sessionArr);
+  } else if (sessionArr[i].groupId) {
+    console.log('sessionArr[i].groupId: ' + sessionArr[i].groupId);
+    groups.findOne({"_id": new ObjectId(sessionArr[i].groupId.toString())}, function(err, group) {
+      if (err != null) {
+        console.log('get(/session/all) error: collection.findOne(groupId)');
+        callback(sessionArr, 500, {message: err.message});
+      }
+      if (!group) {
+        console.log('get(/session/all) error: No such group');
+        callback(sessionArr, 409, {message: 'No such group'});
+      }
+      sessionArr[i].groupName = group.name;
+      addGroupName(groups, sessionArr, i + 1, callback);
+    });
+  } else {
+    addGroupName(groups, sessionArr, i + 1, callback);
+  }
+};
 
 /*
  |--------------------------------------------------------------------------

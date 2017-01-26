@@ -180,8 +180,8 @@ angular.module('controllers', [])
       $scope.sessions = response.data;
       for (i = 0; i < $scope.sessions.length; i++) {
         $scope.sessions[i].groupStr = "";
-        if ($scope.sessions[i].groupId) {
-          $scope.sessions[i].groupStr = ", group ID: " + $scope.sessions[i].groupId;
+        if ($scope.sessions[i].groupName) {
+          $scope.sessions[i].groupStr = ", group name: " + $scope.sessions[i].groupName;
         }
       }
     });
