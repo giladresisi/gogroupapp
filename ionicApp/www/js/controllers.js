@@ -32,9 +32,8 @@ angular.module('controllers', [])
     return $scope.isRegistered;
   };
 
-  $scope.onRegisteredChange = function(checked) {
-    console.log('New value: ' + checked);
-    if (checked) {
+  $scope.onRegisteredChange = function() {
+    if ($scope.isRegistered) {
       $http({
         url: BACKEND_URL + 'group/join',
         data: {groupName: $scope.groupName.name},
@@ -87,7 +86,6 @@ angular.module('controllers', [])
   })
     .then(function(response) {
       $scope.sessions = response.data;
-      console.log('response: ' + JSON.stringify(response.data));
     });
 
   if ($scope.isAuthenticated()) {

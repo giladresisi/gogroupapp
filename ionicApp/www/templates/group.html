@@ -1,9 +1,9 @@
 <ion-view view-title="{{groupName.name}}">
   <ion-content>
-  	<ion-item ng-if="isAuthenticated()" class="item item-toggle">
-  	  <ion-toggle id="registeredId" ng-model="isRegistered" toggle-class="toggle-calm" ng-change="onRegisteredChange(isRegistered)">Registered</ion-toggle>
-    </ion-item>
-    <ion-item ng-if="isMember()" class="item item-input-inset">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.isRegistered" toggle-class="toggle-calm" ng-change="onRegisteredChange()">
+    Registered
+    </ion-toggle>
+    <ion-item ng-show="isMember()" class="item item-input-inset">
       <label class="item item-input-wrapper">
         <input type="text" ng-model="newSession.title" placeholder="Session Title">
       </label>
