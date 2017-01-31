@@ -75,6 +75,10 @@ app
           templateUrl: 'templates/group.html',
           controller: 'GroupCtrl'
         }
+      },
+      params: {
+        groupName: undefined,
+        user: null
       }
     });
     

@@ -15,7 +15,7 @@ angular.module('controllers', [])
   };
 })
 
-.controller('GroupCtrl', function($scope, $auth, $http, $state, BACKEND_URL) {
+.controller('GroupCtrl', function($scope, $auth, $http, $stateParams, BACKEND_URL) {
 
   $scope.groupName = {};
   $scope.group = {};
@@ -72,7 +72,9 @@ angular.module('controllers', [])
       });
   };
 
-  $scope.groupName.name = $state.params.groupName;
+  $scope.groupName.name = $stateParams.groupName;
+  $scope.user = $stateParams.user;
+  console.log('stateParams: ' + JSON.stringify($stateParams));
 
   $http.get(BACKEND_URL + 'group/single', {
     params: {name: $scope.groupName.name}
@@ -88,7 +90,8 @@ angular.module('controllers', [])
       $scope.sessions = response.data;
     });
 
-  if ($scope.isAuthenticated()) {
+  if (($scope.isAuthenticated()) &&
+      (!$scope.user)) {
     $http.get(BACKEND_URL + 'api/me')
       .then(function(response) {
         $scope.user = response.data;
@@ -102,7 +105,7 @@ angular.module('controllers', [])
   }
 })
 
-.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
+.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $location, $state, BACKEND_URL) {
 
   // Local vars
   $scope.newGroup = {};
@@ -130,6 +133,12 @@ angular.module('controllers', [])
 
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
+  };
+
+  $scope.goToGroup = function(group) {
+    //console.log('Going to path: /group/' + name);
+    //$location.path('/group/' + groupName);
+    $state.go('app.group', {groupName: group.name})
   };
 
   // Get all existing groups on page load

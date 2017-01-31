@@ -1331,7 +1331,7 @@ app.get('/group/single', function(req, res) {
   MongoPool.getInstance(function (db){
     db.collection('groups', function(err, groups) {
       if (err != null) {
-        console.log('get(/group/single) error: db.collection()');
+        console.log('get(/group/single) error: db.collection(groups)');
         return res.status(500).send({message: err.message });
       }
       groups.findOne({name: req.query.name}, {fields:{users:0}}, function(err, group) {
@@ -1339,12 +1339,46 @@ app.get('/group/single', function(req, res) {
           console.log('get(/group/single) error: collection.findOne()');
           return res.status(500).send({message: err.message });
         }
-        console.log('get(/group/single) success: group = ' + JSON.stringify(group));
-        res.send(group);
+        db.collection('sessions', function(err, sessions) {
+          if (err != null) {
+            console.log('get(/group/single) error: db.collection(sessions)');
+            return res.status(500).send({message: err.message });
+          }
+          var titles = [];
+          addSessionTitle(sessions, group.sessions, titles, 0, function(sessionTitles, status, result) {
+            if (status) {
+              return res.status(status).send(result);
+            }
+            group.sessionTitles = sessionTitles;
+            res.send(group);
+          });
+        });
       });
     });
   });
 });
+function addSessionTitle(sessions, sessionIds, sessionTitles, i, callback) {
+  if (!sessionIds) {
+    console.log('get(/group/single) success: no group sessions');
+    callback(null);
+  } else if (i == sessionIds.length) {
+    console.log('get(/group/single) success: sessionTitles = ' + JSON.stringify(sessionTitles));
+    callback(sessionTitles);
+  } else {
+    sessions.findOne({"_id": new ObjectId(sessionIds[i].toString())}, function(err, session) {
+      if (err != null) {
+        console.log('get(/group/single) error: collection.findOne(sessionId)');
+        callback(sessionTitles, 500, {message: err.message});
+      }
+      if (!session) {
+        console.log('get(/group/single) error: No such session');
+        callback(sessionTitles, 409, {message: 'No such session'});
+      }
+      sessionTitles.push(session.title);
+      addSessionTitle(sessions, sessionIds, sessionTitles, i + 1, callback);
+    });
+  }
+};
 
 /*
  |--------------------------------------------------------------------------
@@ -1582,7 +1616,6 @@ function addGroupName(groups, sessionArr, i, callback) {
     console.log('get(/sessions/all) success: sessionArr = ' + JSON.stringify(sessionArr));
     callback(sessionArr);
   } else if (sessionArr[i].groupId) {
-    console.log('sessionArr[i].groupId: ' + sessionArr[i].groupId);
     groups.findOne({"_id": new ObjectId(sessionArr[i].groupId.toString())}, function(err, group) {
       if (err != null) {
         console.log('get(/session/all) error: collection.findOne(groupId)');
