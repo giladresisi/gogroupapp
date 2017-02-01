@@ -21,7 +21,6 @@ angular.module('controllers', [])
   $scope.group = {};
   $scope.user = {};
   $scope.newSession = {};
-  $scope.sessions = [];
   $scope.isRegistered = false;
 
   $scope.isAuthenticated = function() {
@@ -65,7 +64,7 @@ angular.module('controllers', [])
       .then(function(response) {
         $scope.newSession = {};
         console.log('Created session: ' + JSON.stringify(response));
-        $scope.sessions.push(response.data);
+        $scope.group.sessions.push(response.data);
       }).
       catch(function(error) {
         console.log('Create session error: ' + error.data.message + ' ' + error.status);
@@ -81,13 +80,6 @@ angular.module('controllers', [])
   })
     .then(function(response) {
       $scope.group = response.data;
-    });
-
-  $http.get(BACKEND_URL + 'session/group', {
-    params: {groupName: $scope.groupName.name}
-  })
-    .then(function(response) {
-      $scope.sessions = response.data;
     });
 
   if (($scope.isAuthenticated()) &&

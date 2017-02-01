@@ -13,8 +13,8 @@
   	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
   	</ion-item>
   	<ion-list>
-  	  <ion-item ng-repeat="session in sessions">
-        {{session.title}}, {{session.userIds.length}} participants
+  	  <ion-item ng-repeat="session in group.sessions">
+        {{session.title}}, {{session.nParticipants}} participants
       </ion-item>
   	</ion-list>
   </ion-content>
