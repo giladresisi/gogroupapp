@@ -18,21 +18,16 @@ angular.module('controllers', [])
 .controller('GroupCtrl', function($scope, $auth, $http, $stateParams, BACKEND_URL) {
 
   $scope.groupName = {};
+  $scope.isMember = false;
   $scope.group = {};
-  $scope.user = {};
   $scope.newSession = {};
-  $scope.isRegistered = false;
 
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
   };
 
-  $scope.isMember = function() {
-    return $scope.isRegistered;
-  };
-
-  $scope.onRegisteredChange = function() {
-    if ($scope.isRegistered) {
+  $scope.onMemberChange = function() {
+    if ($scope.isMember) {
       $http({
         url: BACKEND_URL + 'group/join',
         data: {groupName: $scope.groupName.name},
@@ -63,7 +58,6 @@ angular.module('controllers', [])
     })
       .then(function(response) {
         $scope.newSession = {};
-        console.log('Created session: ' + JSON.stringify(response));
         $scope.group.sessions.push(response.data);
       }).
       catch(function(error) {
@@ -72,29 +66,22 @@ angular.module('controllers', [])
   };
 
   $scope.groupName.name = $stateParams.groupName;
-  $scope.user = $stateParams.user;
-  console.log('stateParams: ' + JSON.stringify($stateParams));
+  if ($stateParams.isMember) {
+    $scope.isMember = $stateParams.isMember;
+  }
 
-  $http.get(BACKEND_URL + 'group/single', {
+  var endPoint = BACKEND_URL + 'group/single';
+
+  if ($scope.isAuthenticated()) {
+    endPoint += '/user';
+  }
+
+  $http.get(endPoint, {
     params: {name: $scope.groupName.name}
   })
     .then(function(response) {
       $scope.group = response.data;
     });
-
-  if (($scope.isAuthenticated()) &&
-      (!$scope.user)) {
-    $http.get(BACKEND_URL + 'api/me')
-      .then(function(response) {
-        $scope.user = response.data;
-        for (i = 0; i < $scope.user.groups.length; i++) {
-          if ($scope.user.groups[i].toString() == $scope.group._id.toString()) {
-            $scope.isRegistered = true;
-            break;
-          }
-        }
-      });
-  }
 })
 
 .controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $location, $state, BACKEND_URL) {
@@ -119,7 +106,7 @@ angular.module('controllers', [])
     })
       .then(function(response) {
         $scope.newGroup = {};
-        $location.path('/groups/' + response.data);
+        $state.go('app.group', {groupName: response, isMember: true});
       });
   };
 
@@ -128,13 +115,16 @@ angular.module('controllers', [])
   };
 
   $scope.goToGroup = function(group) {
-    //console.log('Going to path: /group/' + name);
-    //$location.path('/group/' + groupName);
-    $state.go('app.group', {groupName: group.name})
+    $state.go('app.group', {groupName: group.name, isMember: group.isMember});
   };
 
-  // Get all existing groups on page load
-  $http.get(BACKEND_URL + 'group/all')
+  var endPoint = BACKEND_URL + 'group/all';
+
+  if ($scope.isAuthenticated()) {
+    endPoint += '/user';
+  }
+
+  $http.get(endPoint)
     .then(function(response) {
       $scope.groups = response.data;
     });

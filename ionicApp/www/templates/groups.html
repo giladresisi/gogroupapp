@@ -10,7 +10,6 @@
       <h2 class="title"><center>Existing Groups</center></h2>
     </ion-item>
     <ion-list>
-      <!-- <ion-item ng-repeat="group in groups" href="#/group/{{group.name}}"> -->
       <ion-item ng-repeat="group in groups" ng-click="goToGroup(group)">
         {{group.name}}, {{group.nMembers}} members
       </ion-item>

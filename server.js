@@ -1490,7 +1490,7 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                 }
                 group.sessions = sessionArr;
                 res.send(group);
-              }, user._id.ToString());
+              }, user._id.toString());
             });
           });
         });
@@ -1598,6 +1598,12 @@ app.post('/group/join', ensureAuthenticated, function(req, res) {
               console.log('post(/group/join) error: No such group');
               return res.status(409).send({ message: 'No such group' });
             }
+            if (group.users.some(function(userId) {
+              return userId.toString() == user._id.toString();
+            })) {
+              console.log('post(/group/join) error: User is already a member');
+              return res.status(408).send({ message: 'User is already a member' });
+            }
             group.users.push(user._id);
             groups.updateOne({"_id": group._id}, {$set:{
               users: group.users
@@ -1686,10 +1692,14 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
                       break;
                     }
                   }
+                  console.log('post(/group/leave) error: User does not contain group');
+                  return res.status(406).send({ message: 'User does not contain group' });
                 });
                 break;
               }
             }
+            console.log('post(/group/leave) error: Group does not contain user');
+            return res.status(407).send({ message: 'Group does not contain user' });
           });
         });
       });
