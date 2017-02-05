@@ -1,9 +1,9 @@
 <ion-view view-title="{{groupName.name}}">
   <ion-content>
-	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.isMember" toggle-class="toggle-calm" ng-change="onMemberChange()">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.groupParams.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange()">
     Member
     </ion-toggle>
-    <ion-item ng-show="isMember" class="item item-input-inset">
+    <ion-item ng-show="groupParams.isMember" class="item item-input-inset">
       <label class="item item-input-wrapper">
         <input type="text" ng-model="newSession.title" placeholder="Session Title">
       </label>
@@ -13,7 +13,11 @@
   	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
   	</ion-item>
   	<ion-list>
-  	  <ion-item ng-repeat="session in group.sessions">
+      <ion-toggle ng-show="groupParams.isMember" ng-repeat="session in group.sessions" ng-model="session.isParticipant" 
+        toggle-class="toggle-calm" ng-change="onParticipationChange(session)">
+        {{session.title}}, {{session.nParticipants}} participants
+      </ion-toggle>
+  	  <ion-item ng-show="!groupParams.isMember" ng-repeat="session in group.sessions">
         {{session.title}}, {{session.nParticipants}} participants
       </ion-item>
   	</ion-list>

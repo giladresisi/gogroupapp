@@ -17,8 +17,7 @@ angular.module('controllers', [])
 
 .controller('GroupCtrl', function($scope, $auth, $http, $stateParams, BACKEND_URL) {
 
-  $scope.groupName = {};
-  $scope.isMember = false;
+  $scope.groupParams = {};
   $scope.group = {};
   $scope.newSession = {};
 
@@ -26,17 +25,17 @@ angular.module('controllers', [])
     return $auth.isAuthenticated();
   };
 
-  $scope.onMemberChange = function() {
-    if ($scope.isMember) {
+  $scope.onMembershipChange = function() {
+    if ($scope.groupParams.isMember) {
       $http({
         url: BACKEND_URL + 'group/join',
-        data: {groupName: $scope.groupName.name},
+        data: {groupId: $scope.groupParams.groupId},
         method: 'POST'
       });
     } else {
       $http({
         url: BACKEND_URL + 'group/leave',
-        data: {groupName: $scope.groupName.name},
+        data: {groupId: $scope.groupParams.groupId},
         method: 'POST'
       });
     }
@@ -65,9 +64,13 @@ angular.module('controllers', [])
       });
   };
 
-  $scope.groupName.name = $stateParams.groupName;
-  if ($stateParams.isMember) {
-    $scope.isMember = $stateParams.isMember;
+  $scope.onParticipationChange = function(session) {
+    console.log('Changed participation for session: ' + JSON.stringify(session));
+  }
+
+  $scope.groupParams = $stateParams;
+  if ($scope.groupParams.isMember == null) {
+    $scope.groupParams.isMember = false;
   }
 
   var endPoint = BACKEND_URL + 'group/single';
@@ -77,7 +80,7 @@ angular.module('controllers', [])
   }
 
   $http.get(endPoint, {
-    params: {name: $scope.groupName.name}
+    params: {groupId: $scope.groupParams.groupId}
   })
     .then(function(response) {
       $scope.group = response.data;
@@ -106,7 +109,7 @@ angular.module('controllers', [])
     })
       .then(function(response) {
         $scope.newGroup = {};
-        $state.go('app.group', {groupName: response, isMember: true});
+        $state.go('app.group', {groupName: response.name, groupId: response._id, isMember: true});
       });
   };
 
@@ -115,8 +118,25 @@ angular.module('controllers', [])
   };
 
   $scope.goToGroup = function(group) {
-    $state.go('app.group', {groupName: group.name, isMember: group.isMember});
-  };
+    $state.go('app.group', {groupName: group.name, groupId: group._id, isMember: group.isMember});
+  }
+  
+  $scope.onMembershipChange = function(group) {
+    console.log('Changed membership for group: ' + JSON.stringify(group));
+    if (group.isMember) {
+      $http({
+        url: BACKEND_URL + 'group/join',
+        data: {groupId: group._id},
+        method: 'POST'
+      });
+    } else {
+      $http({
+        url: BACKEND_URL + 'group/leave',
+        data: {groupId: group._id},
+        method: 'POST'
+      });
+    }
+  }
 
   var endPoint = BACKEND_URL + 'group/all';
 
@@ -163,8 +183,17 @@ angular.module('controllers', [])
     return $auth.isAuthenticated();
   };
 
-  // Get all existing sessions on page load
-  $http.get(BACKEND_URL + 'session/all')
+  $scope.onParticipationChange = function(session) {
+    console.log('Changed participation for session: ' + JSON.stringify(session));
+  }
+
+  var endPoint = BACKEND_URL + 'session/all';
+
+  if ($scope.isAuthenticated()) {
+    endPoint += '/user';
+  }
+
+  $http.get(endPoint)
     .then(function(response) {
       $scope.sessions = response.data;
       for (i = 0; i < $scope.sessions.length; i++) {

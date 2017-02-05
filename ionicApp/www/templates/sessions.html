@@ -10,7 +10,11 @@
       <h2 class="title"><center>Existing Sessions</center></h2>
     </ion-item>
     <ion-list>
-      <ion-item ng-repeat="session in sessions">
+      <ion-toggle ng-show="isAuthenticated()" ng-repeat="session in sessions" ng-model="session.isParticipant" 
+        toggle-class="toggle-calm" ng-change="onParticipationChange(session)">
+        {{session.title}}, {{session.nParticipants}} participants {{session.groupStr}}
+      </ion-toggle>
+      <ion-item ng-show="!isAuthenticated()" ng-repeat="session in sessions">
         {{session.title}}, {{session.nParticipants}} participants {{session.groupStr}}
       </ion-item>
     </ion-list>

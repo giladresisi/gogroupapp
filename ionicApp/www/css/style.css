@@ -1,1 +1,9 @@
 /* Empty. Add your own CSS if you like */
+.item-toggle{
+  pointer-events:initial !important;
+}
+
+a{
+  display: block;
+  width: 100%;
+}

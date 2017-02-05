@@ -10,7 +10,11 @@
       <h2 class="title"><center>Existing Groups</center></h2>
     </ion-item>
     <ion-list>
-      <ion-item ng-repeat="group in groups" ng-click="goToGroup(group)">
+      <ion-toggle ng-show="isAuthenticated()" ng-repeat="group in groups" ng-model="group.isMember" 
+        toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="cursor:pointer">
+        <a ng-click="goToGroup(group)">{{group.name}}, {{group.nMembers}} members</a>
+      </ion-toggle>
+      <ion-item ng-show="!isAuthenticated()" ng-repeat="group in groups" ng-click="goToGroup(group)">
         {{group.name}}, {{group.nMembers}} members
       </ion-item>
     </ion-list>

@@ -78,6 +78,7 @@ app
       },
       params: {
         groupName: undefined,
+        groupId: undefined,
         isMember: null
       }
     });
