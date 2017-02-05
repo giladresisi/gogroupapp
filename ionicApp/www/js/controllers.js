@@ -15,7 +15,7 @@ angular.module('controllers', [])
   };
 })
 
-.controller('GroupCtrl', function($scope, $auth, $http, $stateParams, BACKEND_URL) {
+.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup, $stateParams, $state, BACKEND_URL) {
 
   $scope.groupParams = {};
   $scope.group = {};
@@ -42,7 +42,7 @@ angular.module('controllers', [])
   };
 
   $scope.createSession = function() {
-    if ((!$scope.newSession) || ($scope.newSession.title == "")) {
+    if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
       $ionicPopup.alert({
         title: 'Error',
         content: 'Type a title for the new session'
@@ -57,7 +57,7 @@ angular.module('controllers', [])
     })
       .then(function(response) {
         $scope.newSession = {};
-        $scope.group.sessions.push(response.data);
+        $state.go('app.session', {title: response.title, sessionId: response._id, nParticipants: response.nParticipants, isParticipant: true});
       }).
       catch(function(error) {
         console.log('Create session error: ' + error.data.message + ' ' + error.status);
@@ -65,7 +65,23 @@ angular.module('controllers', [])
   };
 
   $scope.onParticipationChange = function(session) {
-    console.log('Changed participation for session: ' + JSON.stringify(session));
+    if (session.isParticipant) {
+      $http({
+        url: BACKEND_URL + 'session/join',
+        data: {sessionId: session.sessionId},
+        method: 'POST'
+      });
+    } else {
+      $http({
+        url: BACKEND_URL + 'session/leave',
+        data: {sessionId: session.sessionId},
+        method: 'POST'
+      });
+    }
+  }
+
+  $scope.goToSession = function(session) {
+    $state.go('app.session', {title: session.title, sessionId: session._id, nParticipants: session.nParticipants, isParticipant: session.isParticipant});
   }
 
   $scope.groupParams = $stateParams;
@@ -122,7 +138,6 @@ angular.module('controllers', [])
   }
   
   $scope.onMembershipChange = function(group) {
-    console.log('Changed membership for group: ' + JSON.stringify(group));
     if (group.isMember) {
       $http({
         url: BACKEND_URL + 'group/join',
@@ -150,14 +165,52 @@ angular.module('controllers', [])
     });
 })
 
-.controller('SessionsCtrl', function($scope, $auth, $http, $ionicPopup, $location, BACKEND_URL) {
+.controller('SessionCtrl', function($scope, $auth, $http, $stateParams, BACKEND_URL) {
+
+  $scope.sessionParams = {};
+
+  $scope.isAuthenticated = function() {
+    return $auth.isAuthenticated();
+  };
+
+  $scope.onParticipationChange = function() {
+    if ($scope.sessionParams.isParticipant) {
+      $http({
+        url: BACKEND_URL + 'session/join',
+        data: {sessionId: $scope.sessionParams.sessionId},
+        method: 'POST'
+      }).
+        then(function(response) {
+          $scope.sessionParams.nParticipants += 1;
+        });
+    } else {
+      $http({
+        url: BACKEND_URL + 'session/leave',
+        data: {sessionId: $scope.sessionParams.sessionId},
+        method: 'POST'
+      }).
+        then(function(response) {
+          $scope.sessionParams.nParticipants -= 1;
+        });
+    }
+  };
+
+  $scope.sessionParams = $stateParams;
+  console.log('Params: ' + JSON.stringify($scope.sessionParams));
+  if ($scope.sessionParams.isParticipant == null) {
+    $scope.sessionParams.isParticipant = false;
+  }
+
+})
+
+.controller('SessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, BACKEND_URL) {
 
   // Local vars
   $scope.newSession = {};
   $scope.sessions = [];
 
   $scope.createSession = function() {
-    if ((!$scope.newSession) || ($scope.newSession.title == "")) {
+    if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
       $ionicPopup.alert({
         title: 'Error',
         content: 'Type a title for the new session'
@@ -171,8 +224,7 @@ angular.module('controllers', [])
     })
       .then(function(response) {
         $scope.newSession = {};
-        console.log('Created session: ' + JSON.stringify(response));
-        $scope.sessions.push(response.data);
+        $state.go('app.session', {title: response.title, sessionId: response._id, nParticipants: response.nParticipants, isParticipant: true});
       }).
       catch(function(error) {
         console.log('Create session error: ' + error.data.message + ' ' + error.status);
@@ -184,7 +236,23 @@ angular.module('controllers', [])
   };
 
   $scope.onParticipationChange = function(session) {
-    console.log('Changed participation for session: ' + JSON.stringify(session));
+    if (session.isParticipant) {
+      $http({
+        url: BACKEND_URL + 'session/join',
+        data: {sessionId: session._id},
+        method: 'POST'
+      });
+    } else {
+      $http({
+        url: BACKEND_URL + 'session/leave',
+        data: {sessionId: session._id},
+        method: 'POST'
+      });
+    }
+  }
+
+  $scope.goToSession = function(session) {
+    $state.go('app.session', {title: session.title, sessionId: session._id, nParticipants: session.nParticipants, isParticipant: session.isParticipant});
   }
 
   var endPoint = BACKEND_URL + 'session/all';

@@ -1,21 +1,13 @@
-<ion-view view-title="{{groupName.name}}">
+<ion-view view-title="{{sessionParams.title}}">
   <ion-content>
-	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.isRegistered" toggle-class="toggle-calm" ng-change="onRegisteredChange()">
-    Registered
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.sessionParams.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange()">
+    Participant
     </ion-toggle>
-    <ion-item ng-show="isMember()" class="item item-input-inset">
-      <label class="item item-input-wrapper">
-        <input type="text" ng-model="newSession.title" placeholder="Session Title">
-      </label>
-      <button ng-click="createSession()" class="button button-small">Create<br>Session</button>
-    </ion-item>
   	<ion-item>
-  	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
+  	  <h2 class="title"><center>Session Info</center></h2>
   	</ion-item>
-  	<ion-list>
-  	  <ion-item ng-repeat="session in sessions">
-        {{session.title}}, {{session.userIds.length}} participants
-      </ion-item>
-  	</ion-list>
+  	<ion-item>
+      {{sessionParams.title}}, {{sessionParams.nParticipants}} participants
+    </ion-item>
   </ion-content>
 </ion-view>

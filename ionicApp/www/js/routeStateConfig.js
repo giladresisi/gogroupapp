@@ -57,6 +57,22 @@ app
         }
       }
     })
+    .state('app.session', {
+      cache: false,
+      url: '/session',
+      views: {
+        'menuContent': {
+          templateUrl: 'templates/session.html',
+          controller: 'SessionCtrl'
+        }
+      },
+      params: {
+        title: undefined,
+        sessionId: undefined,
+        nParticipants: undefined,
+        isParticipant: null
+      }
+    })
     .state('app.groups', {
       cache: false,
       url: '/groups',
@@ -69,7 +85,7 @@ app
     })
     .state('app.group', {
       cache: false,
-      url: '/group/:groupName',
+      url: '/group',
       views: {
         'menuContent': {
           templateUrl: 'templates/group.html',

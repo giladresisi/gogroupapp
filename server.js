@@ -1385,7 +1385,7 @@ function addSessionsData(sessions, sessionArr, i, callback, participantId) {
     console.log('get(/group/single) success: sessionArr = ' + JSON.stringify(sessionArr));
     callback(sessionArr);
   } else {
-    sessions.findOne({"_id": new ObjectId(sessionArr[i].sessionId)}, function(err, session) {
+    sessions.findOne({"_id": new ObjectId(sessionArr[i]._id)}, function(err, session) {
       if (err != null) {
         console.log('get(/group/single) error: collection.findOne(sessionId)');
         callback(sessionArr, 500, {message: err.message});
@@ -1425,7 +1425,7 @@ app.get('/group/single', function(req, res) {
         }
         for (i = 0; i < group.sessions.length; i++) {
           group.sessions[i] = {
-            sessionId: group.sessions[i].toString()
+            _id: group.sessions[i].toString()
           }
         }
         db.collection('sessions', function(err, sessions) {
@@ -1475,7 +1475,7 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
             }
             for (i = 0; i < group.sessions.length; i++) {
               group.sessions[i] = {
-                sessionId: group.sessions[i].toString(),
+                _id: group.sessions[i].toString(),
                 isParticipant: false
               }
             }
@@ -1545,7 +1545,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
                 return res.status(500).send({ message: err.message });
               }
               user.groups.push(group._id);
-              users.updateOne({"_id": user._id}, {$set:{
+              users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                 groups: user.groups
               }}, function(err) {
                 if (err) {
@@ -1605,7 +1605,7 @@ app.post('/group/join', ensureAuthenticated, function(req, res) {
               return res.status(408).send({ message: 'User is already a member' });
             }
             group.users.push(user._id);
-            groups.updateOne({"_id": group._id}, {$set:{
+            groups.updateOne({"_id": new ObjectId(group._id)}, {$set:{
               users: group.users
             }}, function(err) {
               if (err) {
@@ -1613,7 +1613,7 @@ app.post('/group/join', ensureAuthenticated, function(req, res) {
                 return res.status(500).send({ message: err.message });
               }
               user.groups.push(group._id);
-              users.updateOne({"_id": user._id}, {$set:{
+              users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                 groups: user.groups
               }}, function(err) {
                 if (err) {
@@ -1671,7 +1671,7 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
               if (group.users[i].toString() == user._id.toString()) {
                 userFound = true;
                 group.users.splice(i, 1);
-                groups.updateOne({"_id": group._id}, {$set:{
+                groups.updateOne({"_id": new ObjectId(group._id)}, {$set:{
                   users: group.users
                 }}, function(err) {
                   if (err) {
@@ -1683,7 +1683,7 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
                     if (user.groups[j].toString() == group._id.toString()) {
                       groupFound = true;
                       user.groups.splice(j, 1);
-                      users.updateOne({"_id": user._id}, {$set:{
+                      users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                         groups: user.groups
                       }}, function(err) {
                         if (err) {
@@ -1911,7 +1911,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
               return res.status(500).send({ message: err.message });
             }
             user.sessions.push(session._id);
-            users.updateOne({"_id": user._id}, {$set: {
+            users.updateOne({"_id": new ObjectId(user._id)}, {$set: {
               sessions: user.sessions
             }}, function(err) {
               if (err) {
@@ -1934,7 +1934,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                       return res.status(409).send({ message: 'No such group' });
                     }
                     group.sessions.push(session._id);
-                    groups.updateOne({"_id": group._id}, {$set: {
+                    groups.updateOne({"_id": new ObjectId(group._id)}, {$set: {
                       sessions: group.sessions
                     }}, function(err) {
                       if (err) {
@@ -1997,7 +1997,7 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
               return res.status(408).send({ message: 'User is already a participant' });
             }
             session.userIds.push(user._id);
-            sessions.updateOne({"_id": session._id}, {$set:{
+            sessions.updateOne({"_id": new ObjectId(session._id)}, {$set:{
               userIds: session.userIds
             }}, function(err) {
               if (err) {
@@ -2005,7 +2005,7 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
                 return res.status(500).send({ message: err.message });
               }
               user.sessions.push(session._id);
-              users.updateOne({"_id": user._id}, {$set:{
+              users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                 sessions: user.sessions
               }}, function(err) {
                 if (err) {
@@ -2063,7 +2063,7 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
               if (session.userIds[i].toString() == user._id.toString()) {
                 userFound = true;
                 session.userIds.splice(i, 1);
-                sessions.updateOne({"_id": session._id}, {$set:{
+                sessions.updateOne({"_id": new ObjectId(session._id)}, {$set:{
                   userIds: session.userIds
                 }}, function(err) {
                   if (err) {
@@ -2075,7 +2075,7 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
                     if (user.sessions[j].toString() == session._id.toString()) {
                       sessionFound = true;
                       user.sessions.splice(j, 1);
-                      users.updateOne({"_id": user._id}, {$set:{
+                      users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                         sessions: user.sessions
                       }}, function(err) {
                         if (err) {
