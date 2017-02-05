@@ -14,8 +14,8 @@
         toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants, {{session.groupStr}}</a>
       </ion-toggle>
-      <ion-item ng-show="!isAuthenticated()" ng-repeat="session in sessions">
-        {{session.title}}, {{session.nParticipants}} participants {{session.groupStr}}
+      <ion-item ng-show="!isAuthenticated()" ng-repeat="session in sessions" style="cursor:pointer">
+        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants, {{session.groupStr}}</a>
       </ion-item>
     </ion-list>
   </ion-content>
