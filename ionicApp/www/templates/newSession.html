@@ -1,0 +1,26 @@
+<ion-modal-view>
+  <ion-header-bar>
+    <h1 class="title">New Session</h1>
+    <div class="buttons">
+      <button class="button icon ion-close" ng-click="closeNewSessionModal()"></button>
+    </div>
+  </ion-header-bar>
+  <ion-content>
+    <form ng-submit="createNewSession()">
+      <div class="list">
+        <div class="item item-icon-left" ion-datetime-picker minute-step="15" style="cursor:pointer; color:blue"
+          only-valid="{'after': 'today', 'inclusive': true}" ng-model="newSession.datetime">
+            <i class="icon ion-ios-calendar positive"></i>
+            <strong>{{newSession.datetime| date: "yyyy-MM-dd H:mm"}}</strong>
+        </div>
+        <label class="item item-input">
+          <span class="input-label">Title</span>
+          <input type="text" ng-model="newSession.title">
+        </label>
+        <label class="item">
+          <button class="button button-block button-positive" type="submit">Create</button>
+        </label>
+      </div>
+    </form>
+  </ion-content>
+</ion-modal-view>

@@ -1,10 +1,7 @@
 <ion-view view-title="Sessions">
   <ion-content>
-    <ion-item ng-if="isAuthenticated()" class="item item-input-inset">
-      <label class="item item-input-wrapper">
-        <input type="text" ng-model="newSession.title" placeholder="Session Title">
-      </label>
-      <button ng-click="createSession()" class="button button-small">Create<br>Session</button>
+    <ion-item ng-show="isAuthenticated()">
+      <button class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
     </ion-item>
     <ion-item>
       <h2 class="title"><center>Existing Sessions</center></h2>
@@ -12,10 +9,10 @@
     <ion-list>
       <ion-toggle ng-show="isAuthenticated()" ng-repeat="session in sessions" ng-model="session.isParticipant" 
         toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
-        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants, {{session.groupStr}}</a>
+        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
       </ion-toggle>
       <ion-item ng-show="!isAuthenticated()" ng-repeat="session in sessions" style="cursor:pointer">
-        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants, {{session.groupStr}}</a>
+        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
       </ion-item>
     </ion-list>
   </ion-content>

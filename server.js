@@ -1395,8 +1395,8 @@ function addSessionsData(sessions, sessionArr, i, callback, participantId) {
         callback(sessionArr, 409, {message: 'No such session'});
       }
       sessionArr[i].title = session.title;
-      sessionArr[i].nParticipants = session.userIds.length;
-      if (participantId && session.userIds.some(function(userId) {
+      sessionArr[i].nParticipants = session.users.length;
+      if (participantId && session.users.some(function(userId) {
         return participantId == userId.toString();
       })) {
         sessionArr[i].isParticipant = true;
@@ -1754,14 +1754,14 @@ app.get('/session/all', function(req, res) {
         console.log('get(/session/all) error: db.collection(sessions)');
         return res.status(500).send({message: err.message });
       }
-      sessions.find({}, {_id:1,title:1,userIds:1,groupId:1}).toArray(function(err, sessionArr) {
+      sessions.find({}, {_id:1,title:1,users:1,groupId:1}).toArray(function(err, sessionArr) {
         if (err != null) {
           console.log('get(/session/all) error: collection.find()');
           return res.status(500).send({message: err.message });
         }
         for (i = 0; i < sessionArr.length; i++) {
-          sessionArr[i].nParticipants = sessionArr[i].userIds.length;
-          delete sessionArr[i].userIds;
+          sessionArr[i].nParticipants = sessionArr[i].users.length;
+          delete sessionArr[i].users;
         }
         db.collection('groups', function(err, groups) {
           if (err != null) {
@@ -1802,20 +1802,20 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
             console.log('get(/session/all/user) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
-          sessions.find({}, {_id:1,title:1,userIds:1,groupId:1}).toArray(function(err, sessionArr) {
+          sessions.find({}, {_id:1,title:1,users:1,groupId:1}).toArray(function(err, sessionArr) {
             if (err != null) {
               console.log('get(/session/all/user) error: collection.find()');
               return res.status(500).send({message: err.message });
             }
             for (i = 0; i < sessionArr.length; i++) {
-              sessionArr[i].nParticipants = sessionArr[i].userIds.length;
+              sessionArr[i].nParticipants = sessionArr[i].users.length;
               sessionArr[i].isParticipant = false;
-              if (sessionArr[i].userIds.some(function(userId) {
+              if (sessionArr[i].users.some(function(userId) {
                 return userId.toString() == user._id.toString();
               })) {
                 sessionArr[i].isParticipant = true;
               }
-              delete sessionArr[i].userIds;
+              delete sessionArr[i].users;
             }
             db.collection('groups', function(err, groups) {
               if (err != null) {
@@ -1900,7 +1900,8 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
           }
           var session = {
             title: req.body.title,
-            userIds: [ user._id ]
+            datetimeMS: req.body.datetimeMS,
+            users: [ user._id ]
           };
           if (req.body.groupId) {
             session.groupId = req.body.groupId
@@ -1910,6 +1911,9 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
               console.log('post(/session/create) error: collection.insertOne()');
               return res.status(500).send({ message: err.message });
             }
+            session.nParticipants = 1;
+            session.isParticipant = true;
+            delete session.users;
             user.sessions.push(session._id);
             users.updateOne({"_id": new ObjectId(user._id)}, {$set: {
               sessions: user.sessions
@@ -1941,12 +1945,19 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                         console.log('post(/session/create) error: collection.updateOne(group)');
                         return res.status(500).send({ message: err.message });
                       }
+                      session.sessionId = session._id.toString();
+                      delete session._id;
+                      console.log('post(/session/create) success: session = ' + JSON.stringify(session));
+                      return res.status(200).send(session);
                     });
                   });
                 });
+              } else {
+                session.sessionId = session._id.toString();
+                delete session._id;
+                console.log('post(/session/create) success: session = ' + JSON.stringify(session));
+                return res.status(200).send(session);
               }
-              console.log('post(/session/create) success: session = ' + JSON.stringify(session));
-              return res.status(200).send(session);
             });
           });
         });
@@ -1990,15 +2001,15 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
               console.log('post(/session/join) error: No such session');
               return res.status(409).send({ message: 'No such session' });
             }
-            if (session.userIds.some(function(userId) {
+            if (session.users.some(function(userId) {
               return userId.toString() == user._id.toString();
             })) {
               console.log('post(/session/join) error: User is already a participant');
               return res.status(408).send({ message: 'User is already a participant' });
             }
-            session.userIds.push(user._id);
+            session.users.push(user._id);
             sessions.updateOne({"_id": new ObjectId(session._id)}, {$set:{
-              userIds: session.userIds
+              users: session.users
             }}, function(err) {
               if (err) {
                 console.log('post(/session/join) error: collection.updateOne(sessions)');
@@ -2059,12 +2070,12 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
               return res.status(409).send({ message: 'No such session' });
             }
             var userFound = false;
-            for (i = 0; i < session.userIds.length; i++) {
-              if (session.userIds[i].toString() == user._id.toString()) {
+            for (i = 0; i < session.users.length; i++) {
+              if (session.users[i].toString() == user._id.toString()) {
                 userFound = true;
-                session.userIds.splice(i, 1);
+                session.users.splice(i, 1);
                 sessions.updateOne({"_id": new ObjectId(session._id)}, {$set:{
-                  userIds: session.userIds
+                  users: session.users
                 }}, function(err) {
                   if (err) {
                     console.log('post(/session/leave) error: collection.updateOne(sessions)');

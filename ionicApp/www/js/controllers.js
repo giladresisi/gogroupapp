@@ -1,4 +1,4 @@
-angular.module('controllers', [])
+angular.module('controllers', ['ion-datetime-picker'])
 
 .controller('MenuCtrl', function($scope, $auth) {
 
@@ -15,11 +15,69 @@ angular.module('controllers', [])
   };
 })
 
-.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup, $stateParams, $state, BACKEND_URL) {
+.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup, $ionicModal, $stateParams, $state, BACKEND_URL) {
 
   $scope.groupParams = {};
   $scope.group = {};
   $scope.newSession = {};
+
+  // Create the login modal that we will use later
+  $ionicModal.fromTemplateUrl('templates/newSession.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.newSessionModal = modal;
+  });
+
+  // Triggered in the login modal to close it
+  $scope.closeNewSessionModal = function() {
+    $scope.newSessionModal.hide();
+  };
+
+  // Open the login modal
+  $scope.showNewSessionModal = function() {
+    var newSessionDatetime = new Date();
+    newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
+    $scope.newSession.datetime = newSessionDatetime;
+    $scope.newSession.title = '';
+    $scope.newSessionModal.show();
+  };
+
+  // Perform the login action when the user submits the login form
+  $scope.createNewSession = function() {
+    if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: 'Type a title for the new session'
+      });
+      return;
+    }
+    if ($scope.newSession.datetime < new Date()) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: 'New session must be in the future'
+      });
+      return;
+    }
+
+    $scope.newSession.groupId = $scope.group._id;
+    var newSession = $scope.newSession;
+    newSession.datetimeMS = newSession.datetime.getTime();
+    delete newSession.datetime;
+    $http({
+      url: BACKEND_URL + 'session/create',
+      data: newSession,
+      method: 'POST'
+    })
+      .then(function(response) {
+        $scope.closeNewSessionModal();
+        $scope.newSession = {};
+        $state.go('app.session', response.data);
+      }).
+      catch(function(error) {
+        $scope.closeNewSessionModal();
+        console.log('Create session error: ' + error.data.message + ' ' + error.status);
+      });
+  };
 
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
@@ -41,40 +99,19 @@ angular.module('controllers', [])
     }
   };
 
-  $scope.createSession = function() {
-    if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
-      $ionicPopup.alert({
-        title: 'Error',
-        content: 'Type a title for the new session'
-      });
-      return;
-    }
-    $scope.newSession.groupId = $scope.group._id;
-    $http({
-      url: BACKEND_URL + 'session/create',
-      data: $scope.newSession,
-      method: 'POST'
-    })
-      .then(function(response) {
-        $scope.newSession = {};
-        $state.go('app.session', {title: response.title, sessionId: response._id, nParticipants: response.nParticipants, isParticipant: true});
-      }).
-      catch(function(error) {
-        console.log('Create session error: ' + error.data.message + ' ' + error.status);
-      });
-  };
-
   $scope.onParticipationChange = function(session) {
     if (session.isParticipant) {
+      session.nParticipants += 1;
       $http({
         url: BACKEND_URL + 'session/join',
-        data: {sessionId: session.sessionId},
+        data: {sessionId: session._id},
         method: 'POST'
       });
     } else {
+      session.nParticipants -= 1;
       $http({
         url: BACKEND_URL + 'session/leave',
-        data: {sessionId: session.sessionId},
+        data: {sessionId: session._id},
         method: 'POST'
       });
     }
@@ -103,7 +140,7 @@ angular.module('controllers', [])
     });
 })
 
-.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $location, $state, BACKEND_URL) {
+.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $state, BACKEND_URL) {
 
   // Local vars
   $scope.newGroup = {};
@@ -203,13 +240,35 @@ angular.module('controllers', [])
 
 })
 
-.controller('SessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, BACKEND_URL) {
+.controller('SessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, $ionicModal, BACKEND_URL) {
 
   // Local vars
   $scope.newSession = {};
   $scope.sessions = [];
 
-  $scope.createSession = function() {
+  // Create the login modal that we will use later
+  $ionicModal.fromTemplateUrl('templates/newSession.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.newSessionModal = modal;
+  });
+
+  // Triggered in the login modal to close it
+  $scope.closeNewSessionModal = function() {
+    $scope.newSessionModal.hide();
+  };
+
+  // Open the login modal
+  $scope.showNewSessionModal = function() {
+    var newSessionDatetime = new Date();
+    newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
+    $scope.newSession.datetime = newSessionDatetime;
+    $scope.newSession.title = '';
+    $scope.newSessionModal.show();
+  };
+
+  // Perform the login action when the user submits the login form
+  $scope.createNewSession = function() {
     if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
       $ionicPopup.alert({
         title: 'Error',
@@ -217,16 +276,29 @@ angular.module('controllers', [])
       });
       return;
     }
+    if ($scope.newSession.datetime < new Date()) {
+      $ionicPopup.alert({
+        title: 'Error',
+        content: 'New session must be in the future'
+      });
+      return;
+    }
+
+    var newSession = $scope.newSession;
+    newSession.datetimeMS = newSession.datetime.getTime();
+    delete newSession.datetime;
     $http({
       url: BACKEND_URL + 'session/create',
-      data: $scope.newSession,
+      data: newSession,
       method: 'POST'
     })
       .then(function(response) {
+        $scope.closeNewSessionModal();
         $scope.newSession = {};
-        $state.go('app.session', {title: response.title, sessionId: response._id, nParticipants: response.nParticipants, isParticipant: true});
+        $state.go('app.session', response.data);
       }).
       catch(function(error) {
+        $scope.closeNewSessionModal();
         console.log('Create session error: ' + error.data.message + ' ' + error.status);
       });
   };
@@ -237,12 +309,14 @@ angular.module('controllers', [])
 
   $scope.onParticipationChange = function(session) {
     if (session.isParticipant) {
+      session.nParticipants += 1;
       $http({
         url: BACKEND_URL + 'session/join',
         data: {sessionId: session._id},
         method: 'POST'
       });
     } else {
+      session.nParticipants -= 1;
       $http({
         url: BACKEND_URL + 'session/leave',
         data: {sessionId: session._id},
@@ -252,6 +326,7 @@ angular.module('controllers', [])
   }
 
   $scope.goToSession = function(session) {
+    console.log('Going to session: ' + JSON.stringify(session));
     $state.go('app.session', {title: session.title, sessionId: session._id, nParticipants: session.nParticipants, isParticipant: session.isParticipant});
   }
 
@@ -265,9 +340,9 @@ angular.module('controllers', [])
     .then(function(response) {
       $scope.sessions = response.data;
       for (i = 0; i < $scope.sessions.length; i++) {
-        $scope.sessions[i].groupStr = "";
+        $scope.sessions[i].groupStr = '';
         if ($scope.sessions[i].groupName) {
-          $scope.sessions[i].groupStr = ", group name: " + $scope.sessions[i].groupName;
+          $scope.sessions[i].groupStr = ', group name: ' + $scope.sessions[i].groupName;
         }
       }
     });
