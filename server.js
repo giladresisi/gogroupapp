@@ -1338,42 +1338,6 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
- | GET /group/user - Get all existing groups a certain user is registered to
- |--------------------------------------------------------------------------
- */
-app.get('/group/user', ensureAuthenticated, function(req, res) {
-  MongoPool.getInstance(function (db){
-    db.collection('users', function(err, users) {
-      if (err != null) {
-        console.log('get(/group/user) error: db.collection(users)');
-        return res.status(500).send({message: err.message});
-      }
-      users.findOne({"_id": new ObjectId(req.user)}, {fields:{groups:1}}, function(err, user) {
-        db.collection('groups', function(err, groups) {
-          if (err != null) {
-            console.log('get(/group/user) error: db.collection(groups)');
-            return res.status(500).send({message: err.message});
-          }
-          groupArr = [];
-          for (i = 0; i < user.groups.length; i++) {
-            groups.findOne({"_id": new ObjectId(user.groups[i])}, {fields:{name:1}}, function(err, group) {
-              if (err != null) {
-                console.log('get(/group/user) error: collection.findOne(groupId)');
-                return res.status(500).send({message: err.message});
-              }
-              groupArr.push(group);
-            });
-          }
-          console.log('get(/group/user) success: groupArr = ' + JSON.stringify(groupArr));
-          res.send(groupArr);
-        });
-      });
-    });
-  });
-});
-
-/*
- |--------------------------------------------------------------------------
  | Aux method to add extra data to every session in an array
  |--------------------------------------------------------------------------
  */
@@ -1448,7 +1412,7 @@ app.get('/group/single', function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
- | GET /group/single/user - Get Data of a Single Group with user participation flag
+ | GET /group/single/user - Get Data of a Single Group with user membership flag
  |--------------------------------------------------------------------------
  */
 app.get('/group/single/user', ensureAuthenticated, function(req, res) {
@@ -1472,6 +1436,12 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
             if (err != null) {
               console.log('get(/group/single/user) error: collection.findOne()');
               return res.status(500).send({message: err.message });
+            }
+            group.isMember = false;
+            if (user.groups.some(function(groupId) {
+              return groupId.toString() == group._id.toString();
+            })) {
+              group.isMember = true;
             }
             for (i = 0; i < group.sessions.length; i++) {
               group.sessions[i] = {
@@ -1536,7 +1506,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
             }
             var group = {
               name: req.body.name,
-              users: [ user._id ],
+              users: [ user._id.toString() ],
               sessions: []
             };
             groups.insertOne(group, function(err) {
@@ -1544,7 +1514,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
                 console.log('post(/group/create) error: collection.insertOne()');
                 return res.status(500).send({ message: err.message });
               }
-              user.groups.push(group._id);
+              user.groups.push(group._id.toString());
               users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                 groups: user.groups
               }}, function(err) {
@@ -1604,7 +1574,7 @@ app.post('/group/join', ensureAuthenticated, function(req, res) {
               console.log('post(/group/join) error: User is already a member');
               return res.status(408).send({ message: 'User is already a member' });
             }
-            group.users.push(user._id);
+            group.users.push(user._id.toString());
             groups.updateOne({"_id": new ObjectId(group._id)}, {$set:{
               users: group.users
             }}, function(err) {
@@ -1612,7 +1582,7 @@ app.post('/group/join', ensureAuthenticated, function(req, res) {
                 console.log('post(/group/join) error: collection.updateOne(groups)');
                 return res.status(500).send({ message: err.message });
               }
-              user.groups.push(group._id);
+              user.groups.push(group._id.toString());
               users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                 groups: user.groups
               }}, function(err) {
@@ -1838,34 +1808,66 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
- | GET /session/user - Get all existing sessions a certain user attends
+ | GET /session/single - Get Data of a Single Session
  |--------------------------------------------------------------------------
  */
-app.get('/session/user', ensureAuthenticated, function(req, res) {
+app.get('/session/single', function(req, res) {
   MongoPool.getInstance(function (db){
     db.collection('sessions', function(err, sessions) {
       if (err != null) {
-        console.log('get(/session/user) error: db.collection(sessions)');
-        return res.status(500).send({message: err.message});
+        console.log('get(/session/single) error: db.collection(sessions)');
+        return res.status(500).send({message: err.message });
       }
-      users.findOne({"_id": new ObjectId(req.user)}, {fields:{sessions:1}}, function(err, user) {
+      sessions.findOne({"_id": new ObjectId(req.query.sessionId)}, function(err, session) {
+        if (err != null) {
+          console.log('get(/session/single) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        session.nParticipants = session.users.length;
+        delete session.users;
+        res.send(session);
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
+ | GET /session/single/user - Get Data of a Single Session with user participation flag
+ |--------------------------------------------------------------------------
+ */
+app.get('/session/single/user', ensureAuthenticated, function(req, res) {
+  MongoPool.getInstance(function (db) {
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('get(/session/single/user) error: db.collection(users)');
+        return res.status(500).send({message: err.message });
+      }
+      users.findOne({"_id": new ObjectId(req.user)}, function(err, user) {
+        if (!user) {
+          console.log('get(/session/single/user) error: User Not Found');
+          return res.status(400).send({ message: 'User Not Found' });
+        }
         db.collection('sessions', function(err, sessions) {
           if (err != null) {
-            console.log('get(/session/user) error: db.collection(sessions)');
-            return res.status(500).send({message: err.message});
+            console.log('get(/session/single/user) error: db.collection(sessions)');
+            return res.status(500).send({message: err.message });
           }
-          sessionArr = [];
-          for (i = 0; i < user.sessions.length; i++) {
-            sessions.findOne({"_id": new ObjectId(user.sessions[i])}, {fields:{_id:1,title:1}}, function(err, session) {
-              if (err != null) {
-                console.log('get(/session/user) error: collection.findOne(sessionId)');
-                return res.status(500).send({message: err.message});
-              }
-              sessionArr.push(session);
-            });
-          }
-          console.log('get(/session/user) success: sessionArr = ' + JSON.stringify(sessionArr));
-          res.send(sessionArr);
+          sessions.findOne({"_id": new ObjectId(req.query.sessionId)}, function(err, session) {
+            if (err != null) {
+              console.log('get(/session/single/user) error: collection.findOne()');
+              return res.status(500).send({message: err.message });
+            }
+            session.nParticipants = session.users.length;
+            delete session.users;
+            session.isParticipant = false;
+            if (user.sessions.some(function(sessionId) {
+              return sessionId.toString() == session._id.toString();
+            })) {
+              session.isParticipant = true;
+            }
+            res.send(session);
+          });
         });
       });
     });
@@ -1901,7 +1903,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
           var session = {
             title: req.body.title,
             datetimeMS: req.body.datetimeMS,
-            users: [ user._id ]
+            users: [ user._id.toString() ]
           };
           if (req.body.groupId) {
             session.groupId = req.body.groupId
@@ -1914,7 +1916,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
             session.nParticipants = 1;
             session.isParticipant = true;
             delete session.users;
-            user.sessions.push(session._id);
+            user.sessions.push(session._id.toString());
             users.updateOne({"_id": new ObjectId(user._id)}, {$set: {
               sessions: user.sessions
             }}, function(err) {
@@ -1937,7 +1939,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                       console.log('post(/session/create) error: No such group');
                       return res.status(409).send({ message: 'No such group' });
                     }
-                    group.sessions.push(session._id);
+                    group.sessions.push(session._id.toString());
                     groups.updateOne({"_id": new ObjectId(group._id)}, {$set: {
                       sessions: group.sessions
                     }}, function(err) {
@@ -1945,16 +1947,12 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                         console.log('post(/session/create) error: collection.updateOne(group)');
                         return res.status(500).send({ message: err.message });
                       }
-                      session.sessionId = session._id.toString();
-                      delete session._id;
                       console.log('post(/session/create) success: session = ' + JSON.stringify(session));
                       return res.status(200).send(session);
                     });
                   });
                 });
               } else {
-                session.sessionId = session._id.toString();
-                delete session._id;
                 console.log('post(/session/create) success: session = ' + JSON.stringify(session));
                 return res.status(200).send(session);
               }
@@ -2007,7 +2005,7 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
               console.log('post(/session/join) error: User is already a participant');
               return res.status(408).send({ message: 'User is already a participant' });
             }
-            session.users.push(user._id);
+            session.users.push(user._id.toString());
             sessions.updateOne({"_id": new ObjectId(session._id)}, {$set:{
               users: session.users
             }}, function(err) {
@@ -2015,7 +2013,7 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
                 console.log('post(/session/join) error: collection.updateOne(sessions)');
                 return res.status(500).send({ message: err.message });
               }
-              user.sessions.push(session._id);
+              user.sessions.push(session._id.toString());
               users.updateOne({"_id": new ObjectId(user._id)}, {$set:{
                 sessions: user.sessions
               }}, function(err) {

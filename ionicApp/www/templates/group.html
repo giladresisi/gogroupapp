@@ -6,15 +6,16 @@
     <ion-item ng-show="groupParams.isMember">
       <button class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
     </ion-item>
+    <ion-checkbox ng-show="groupParams.isMember" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
   	<ion-item>
   	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
   	</ion-item>
   	<ion-list>
-      <ion-toggle ng-show="groupParams.isMember" ng-repeat="session in group.sessions" ng-model="session.isParticipant" 
-        toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
+      <ion-toggle ng-repeat="session in group.sessions" ng-show="groupParams.isMember && (!showMineOnly || session.isParticipant)"
+        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants</a>
       </ion-toggle>
-  	  <ion-item ng-show="!groupParams.isMember" ng-repeat="session in group.sessions" style="cursor:pointer">
+  	  <ion-item ng-repeat="session in group.sessions" ng-show="!groupParams.isMember" style="cursor:pointer">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants</a>
       </ion-item>
   	</ion-list>

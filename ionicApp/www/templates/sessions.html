@@ -3,15 +3,16 @@
     <ion-item ng-show="isAuthenticated()">
       <button class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
     </ion-item>
+    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
     <ion-item>
       <h2 class="title"><center>Existing Sessions</center></h2>
     </ion-item>
     <ion-list>
-      <ion-toggle ng-show="isAuthenticated()" ng-repeat="session in sessions" ng-model="session.isParticipant" 
-        toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
+      <ion-toggle ng-repeat="session in sessions" ng-show="isAuthenticated() && (!showMineOnly || session.isParticipant)"
+        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
       </ion-toggle>
-      <ion-item ng-show="!isAuthenticated()" ng-repeat="session in sessions" style="cursor:pointer">
+      <ion-item ng-repeat="session in sessions" ng-show="!isAuthenticated()" style="cursor:pointer">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
       </ion-item>
     </ion-list>

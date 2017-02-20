@@ -5,8 +5,11 @@
       </ion-nav-back-button>
 
       <ion-nav-buttons side="left">
-        <button class="button button-icon button-clear ion-navicon" menu-toggle="left">
-        </button>
+        <button class="button button-icon button-clear ion-navicon" menu-toggle="left"></button>
+      </ion-nav-buttons>
+      <ion-nav-buttons side="right">
+        <button ng-show="!isAuthenticated()" class="button button-small" ng-click="login()">Login</button>
+        <button ng-show="isAuthenticated()" class="button button-small" ng-click="logout()">Logout</button>
       </ion-nav-buttons>
     </ion-nav-bar>
     <ion-nav-view name="menuContent"></ion-nav-view>
@@ -23,15 +26,6 @@
         </ion-item>
         <ion-item menu-close href="#/groups">
           Groups
-        </ion-item>
-        <ion-item ng-if="!isAuthenticated()" menu-close href="#/login">
-          Login
-        </ion-item>
-		    <ion-item ng-if="isAuthenticated()" menu-close href="#/logout">
-          Logout
-        </ion-item>
-        <ion-item ng-if="isAuthenticated()" menu-close href="#/profile">
-          Profile
         </ion-item>
       </ion-list>
     </ion-content>

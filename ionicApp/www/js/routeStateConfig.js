@@ -9,44 +9,6 @@ app
       templateUrl: 'templates/menu.html',
       controller: 'MenuCtrl'
     })
-    .state('app.signup', {
-      cache: false,
-      url: '/signup',
-      views: {
-        'menuContent': {
-          templateUrl: 'templates/signup.html',
-          controller: 'SignupCtrl'
-        }
-      }
-    })
-    .state('app.login', {
-      cache: false,
-      url: '/login',
-      views: {
-        'menuContent': {
-          templateUrl: 'templates/login.html',
-          controller: 'LoginCtrl'
-        }
-      }
-    })
-    .state('app.logout', {
-      cache: false,
-      url: '/logout',
-      views: {
-        'menuContent': {
-          template: null,
-          controller: 'LogoutCtrl'
-        }
-      }
-    })
-    .state('app.profile', {
-      url: '/profile',
-      views: {
-        'menuContent': {
-          templateUrl: 'templates/profile.html'
-        }
-      }
-    })
     .state('app.sessions', {
       cache: false,
       url: '/sessions',
@@ -59,7 +21,7 @@ app
     })
     .state('app.session', {
       cache: false,
-      url: '/session',
+      url: '/session/:_id',
       views: {
         'menuContent': {
           templateUrl: 'templates/session.html',
@@ -67,9 +29,9 @@ app
         }
       },
       params: {
-        title: undefined,
-        sessionId: undefined,
-        nParticipants: undefined,
+        _id: null,
+        title: null,
+        nParticipants: null,
         isParticipant: null
       }
     })
@@ -85,7 +47,7 @@ app
     })
     .state('app.group', {
       cache: false,
-      url: '/group',
+      url: '/group/:_id',
       views: {
         'menuContent': {
           templateUrl: 'templates/group.html',
@@ -93,8 +55,8 @@ app
         }
       },
       params: {
-        groupName: undefined,
-        groupId: undefined,
+        _id: null,
+        name: null,
         isMember: null
       }
     });

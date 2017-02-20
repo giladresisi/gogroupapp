@@ -1,25 +1,90 @@
 angular.module('controllers', ['ion-datetime-picker'])
 
-.controller('MenuCtrl', function($scope, $auth) {
+.controller('MenuCtrl', function($scope, $auth, $ionicModal, $state) {
 
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-  
+  $scope.loginData = {};
+  $scope.signupData = {};
+
+  $ionicModal.fromTemplateUrl('templates/login.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.loginModal = modal;
+  });
+
+  $ionicModal.fromTemplateUrl('templates/signup.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.signupModal = modal;
+  });
+
+  $scope.closeLogin = function() {
+    $scope.loginModal.hide();
+  };
+
+  $scope.closeSignup = function() {
+    $scope.signupModal.hide();
+  };
+
+  $scope.loginToSignup = function() {
+    $scope.closeLogin();
+    $scope.signupData = {};
+    $scope.signupModal.show();
+  };
+
+  $scope.signupToLogin = function() {
+    $scope.closeSignup();
+    $scope.login();
+  };
+
+  $scope.login = function() {
+    $scope.loginData = {};
+    $scope.loginModal.show();
+  };
+
+  $scope.logout = function() {
+    $auth.logout();
+  };
+
+  // Perform the signup action when the user submits the signup form
+  $scope.doSignup = function() {
+    $auth.signup($scope.signupData)
+      .then(function(response) {
+        $auth.setToken(response);
+        $scope.closeSignup();
+        $state.reload();
+      });
+  };  
+
+  // Perform the login action when the user submits the login form
+  $scope.doLogin = function() {
+    $auth.login($scope.loginData)
+      .then(function() {
+        $scope.closeLogin();
+        $state.reload();
+      });
+  };
+
+  // Authenticate current visitor with external auth provider
+  $scope.authenticate = function(provider) {
+    $auth.authenticate(provider)
+      .then(function() {
+        $scope.closeLogin();
+        $state.reload();
+      });
+  };
+
   // Check if the current visitor is an authenticated user
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
   };
 })
 
-.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup, $ionicModal, $stateParams, $state, BACKEND_URL) {
+.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup, $ionicModal, $stateParams, $state, $ionicHistory, BACKEND_URL) {
 
   $scope.groupParams = {};
   $scope.group = {};
   $scope.newSession = {};
+  $scope.showMineOnly = false;
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/newSession.html', {
@@ -71,7 +136,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function(response) {
         $scope.closeNewSessionModal();
         $scope.newSession = {};
-        $state.go('app.session', response.data);
+        $state.go('app.session', {_id: response.data._id, title: response.data.title, nParticipants: response.data.nParicipants, isParticipant: true});
       }).
       catch(function(error) {
         $scope.closeNewSessionModal();
@@ -87,13 +152,13 @@ angular.module('controllers', ['ion-datetime-picker'])
     if ($scope.groupParams.isMember) {
       $http({
         url: BACKEND_URL + 'group/join',
-        data: {groupId: $scope.groupParams.groupId},
+        data: {groupId: $scope.groupParams._id},
         method: 'POST'
       });
     } else {
       $http({
         url: BACKEND_URL + 'group/leave',
-        data: {groupId: $scope.groupParams.groupId},
+        data: {groupId: $scope.groupParams._id},
         method: 'POST'
       });
     }
@@ -118,26 +183,38 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.goToSession = function(session) {
-    $state.go('app.session', {title: session.title, sessionId: session._id, nParticipants: session.nParticipants, isParticipant: session.isParticipant});
+    $state.go('app.session', session);
   }
 
   $scope.groupParams = $stateParams;
-  if ($scope.groupParams.isMember == null) {
-    $scope.groupParams.isMember = false;
-  }
 
-  var endPoint = BACKEND_URL + 'group/single';
-
-  if ($scope.isAuthenticated()) {
-    endPoint += '/user';
-  }
-
-  $http.get(endPoint, {
-    params: {groupId: $scope.groupParams.groupId}
-  })
-    .then(function(response) {
-      $scope.group = response.data;
+  if ($scope.groupParams._id == null) {
+    $ionicHistory.nextViewOptions({
+      disableBack: true
     });
+    $state.go('app.groups');
+  } else {
+
+    if ($scope.groupParams.isMember == null) {
+      $scope.groupParams.isMember = false;
+    }
+
+    var endPoint = BACKEND_URL + 'group/single';
+
+    if ($scope.isAuthenticated()) {
+      endPoint += '/user';
+    }
+
+    $http.get(endPoint, {
+      params: {groupId: $scope.groupParams._id}
+    })
+      .then(function(response) {
+        $scope.group = response.data;
+        if ($scope.group.isMember) {
+          $scope.groupParams.isMember = true;
+        }
+      });
+  }
 })
 
 .controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $state, BACKEND_URL) {
@@ -145,6 +222,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   // Local vars
   $scope.newGroup = {};
   $scope.groups = [];
+  $scope.showMineOnly = false;
 
   $scope.createGroup = function() {
     if ((!$scope.newGroup.name) || ($scope.newGroup.name == "")) {
@@ -162,7 +240,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.newGroup = {};
-        $state.go('app.group', {groupName: response.name, groupId: response._id, isMember: true});
+        $state.go('app.group', {_id: response.data._id, name: response.data.name, isMember: true});
       });
   };
 
@@ -171,17 +249,19 @@ angular.module('controllers', ['ion-datetime-picker'])
   };
 
   $scope.goToGroup = function(group) {
-    $state.go('app.group', {groupName: group.name, groupId: group._id, isMember: group.isMember});
+    $state.go('app.group', group);
   }
   
   $scope.onMembershipChange = function(group) {
     if (group.isMember) {
+      group.nMembers += 1;
       $http({
         url: BACKEND_URL + 'group/join',
         data: {groupId: group._id},
         method: 'POST'
       });
     } else {
+      group.nMembers -= 1;
       $http({
         url: BACKEND_URL + 'group/leave',
         data: {groupId: group._id},
@@ -202,7 +282,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     });
 })
 
-.controller('SessionCtrl', function($scope, $auth, $http, $stateParams, BACKEND_URL) {
+.controller('SessionCtrl', function($scope, $auth, $http, $stateParams, $state, $ionicHistory, BACKEND_URL) {
 
   $scope.sessionParams = {};
 
@@ -212,32 +292,52 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.onParticipationChange = function() {
     if ($scope.sessionParams.isParticipant) {
+      $scope.sessionParams.nParticipants += 1;
       $http({
         url: BACKEND_URL + 'session/join',
-        data: {sessionId: $scope.sessionParams.sessionId},
+        data: {sessionId: $scope.sessionParams._id},
         method: 'POST'
-      }).
-        then(function(response) {
-          $scope.sessionParams.nParticipants += 1;
-        });
+      });
     } else {
+      $scope.sessionParams.nParticipants -= 1;
       $http({
         url: BACKEND_URL + 'session/leave',
-        data: {sessionId: $scope.sessionParams.sessionId},
+        data: {sessionId: $scope.sessionParams._id},
         method: 'POST'
-      }).
-        then(function(response) {
-          $scope.sessionParams.nParticipants -= 1;
-        });
+      });
     }
   };
 
   $scope.sessionParams = $stateParams;
-  console.log('Params: ' + JSON.stringify($scope.sessionParams));
-  if ($scope.sessionParams.isParticipant == null) {
-    $scope.sessionParams.isParticipant = false;
-  }
 
+  if ($scope.sessionParams._id == null) {
+    $ionicHistory.nextViewOptions({
+      disableBack: true
+    });
+    $state.go('app.sessions');
+  } else {
+
+    if ($scope.sessionParams.isParticipant == null) {
+      $scope.sessionParams.isParticipant = false;
+    }
+
+    var endPoint = BACKEND_URL + 'session/single';
+
+    if ($scope.isAuthenticated()) {
+      endPoint += '/user';
+    }
+
+    $http.get(endPoint, {
+      params: {sessionId: $scope.sessionParams._id}
+    })
+      .then(function(response) {
+        $scope.sessionParams.title = response.data.title;
+        $scope.sessionParams.nParticipants = response.data.nParticipants;
+        if (response.data.isParticipant) {
+          $scope.sessionParams.isParticipant = true;
+        }
+      });
+  }
 })
 
 .controller('SessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, $ionicModal, BACKEND_URL) {
@@ -245,6 +345,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   // Local vars
   $scope.newSession = {};
   $scope.sessions = [];
+  $scope.showMineOnly = false;
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/newSession.html', {
@@ -295,7 +396,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function(response) {
         $scope.closeNewSessionModal();
         $scope.newSession = {};
-        $state.go('app.session', response.data);
+        $state.go('app.session', {_id: response.data._id, title: response.data.title, nParticipants: response.data.nParicipants, isParticipant: true});
       }).
       catch(function(error) {
         $scope.closeNewSessionModal();
@@ -326,8 +427,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.goToSession = function(session) {
-    console.log('Going to session: ' + JSON.stringify(session));
-    $state.go('app.session', {title: session.title, sessionId: session._id, nParticipants: session.nParticipants, isParticipant: session.isParticipant});
+    $state.go('app.session', session);
   }
 
   var endPoint = BACKEND_URL + 'session/all';
@@ -346,90 +446,4 @@ angular.module('controllers', ['ion-datetime-picker'])
         }
       }
     });
-})
-
-.controller('LogoutCtrl', function($scope, $auth, $state, $ionicHistory) {
-
-  // Make sure the user is currently authenticated (else - do nothing)
-  if (!$auth.isAuthenticated()) {
-    return;
-  }
-
-  // Log out current user using auth module
-  $auth.logout()
-    .then(function() {
-      
-      // Erase history so when navigating to home page there won't be a back button icon
-      $ionicHistory.nextViewOptions({
-        historyRoot: true
-      });
-
-      // Navigate back to sessions page using the ap states
-      $state.go('app.sessions');
-    });
-})
-
-.controller('SignupCtrl', function($scope, $auth, $state, $ionicHistory) {
-
-  $scope.signupData = {};
-
-  // Perform the signup action when the user submits the signup form
-  $scope.doSignup = function() {
-
-    // Login using the auth module
-    $auth.signup($scope.signupData)
-      .then(function(response) {
-        $auth.setToken(response);
-
-        // Erase history so when navigating to home page there won't be a back button icon
-        $ionicHistory.nextViewOptions({
-          historyRoot: true
-        });
-
-        // Navigate back to sessions page using the ap states
-        $state.go('app.sessions');
-      });
-  };
-})
-
-.controller('LoginCtrl', function($scope, $auth, $state, $ionicHistory) {
-
-  // Init login data structs
-  $scope.loginData = {};
-
-  // Go back to home page after successful login / authentication
-  $scope.closeLogin = function() {
-
-    // Erase history so when navigating to home page there won't be a back button icon
-    $ionicHistory.nextViewOptions({
-      historyRoot: true
-    });
-
-    // Navigate back to sessions page using the ap states
-    $state.go('app.sessions');
-  };
-
-  // Perform the login action when the user submits the login form
-  $scope.doLogin = function() {
-
-    // Login using the auth module
-    $auth.login($scope.loginData)
-      .then(function() {
-
-        // Navigate back to home page after successful login
-        $scope.closeLogin();
-      });
-  };
-
-  // Authenticate current visitor with external auth provider
-  $scope.authenticate = function(provider) {
-
-    // Authenticate with provider using the auth module
-    $auth.authenticate(provider)
-      .then(function() {
-
-        // Navigate back to home page after successful authentication
-        $scope.closeLogin();
-      });
-  };
 });
