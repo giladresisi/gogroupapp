@@ -1,6 +1,6 @@
 angular.module('controllers', ['ion-datetime-picker'])
 
-.controller('MenuCtrl', function($scope, $auth, $ionicModal, $state) {
+.controller('AppCtrl', function($scope, $auth, $ionicModal, $state) {
 
   $scope.loginData = {};
   $scope.signupData = {};
@@ -77,42 +77,44 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
   };
+
+  $scope.isStateIncluding = function(stateSubstring) {
+    return new RegExp(stateSubstring).test($state.$current.name);
+  }
 })
 
-.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup, $ionicModal, $stateParams, $state, $ionicHistory, BACKEND_URL) {
+.controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup,
+  $ionicModal, $stateParams, $state, $ionicHistory, BACKEND_URL) {
 
   $scope.groupParams = {};
-  $scope.group = {};
   $scope.newSession = {};
   $scope.showMineOnly = false;
 
-  // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/newSession.html', {
     scope: $scope
   }).then(function(modal) {
     $scope.newSessionModal = modal;
   });
 
-  // Triggered in the login modal to close it
   $scope.closeNewSessionModal = function() {
     $scope.newSessionModal.hide();
   };
 
-  // Open the login modal
   $scope.showNewSessionModal = function() {
     var newSessionDatetime = new Date();
     newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
     $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.title = '';
+    $scope.newSession.location = '';
     $scope.newSessionModal.show();
   };
 
-  // Perform the login action when the user submits the login form
   $scope.createNewSession = function() {
-    if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
+    if ((!$scope.newSession.title) || ($scope.newSession.title == '') ||
+        (!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
         title: 'Error',
-        content: 'Type a title for the new session'
+        content: 'Type a title & location for the new session'
       });
       return;
     }
@@ -124,7 +126,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       return;
     }
 
-    $scope.newSession.groupId = $scope.group._id;
+    $scope.newSession.groupId = $scope.groupParams._id;
     var newSession = $scope.newSession;
     newSession.datetimeMS = newSession.datetime.getTime();
     delete newSession.datetime;
@@ -136,7 +138,8 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function(response) {
         $scope.closeNewSessionModal();
         $scope.newSession = {};
-        $state.go('app.session', {_id: response.data._id, title: response.data.title, nParticipants: response.data.nParicipants, isParticipant: true});
+        $state.go('app.session', {_id: response.data._id, title: response.data.title,
+          location: response.data.location, nParticipants: response.data.nParicipants, isParticipant: true});
       }).
       catch(function(error) {
         $scope.closeNewSessionModal();
@@ -193,11 +196,8 @@ angular.module('controllers', ['ion-datetime-picker'])
       disableBack: true
     });
     $state.go('app.groups');
-  } else {
 
-    if ($scope.groupParams.isMember == null) {
-      $scope.groupParams.isMember = false;
-    }
+  } else {
 
     var endPoint = BACKEND_URL + 'group/single';
 
@@ -209,26 +209,43 @@ angular.module('controllers', ['ion-datetime-picker'])
       params: {groupId: $scope.groupParams._id}
     })
       .then(function(response) {
-        $scope.group = response.data;
-        if ($scope.group.isMember) {
-          $scope.groupParams.isMember = true;
+        $scope.groupParams = response.data;
+        if ($scope.groupParams.isMember == null) {
+          $scope.groupParams.isMember = false;
         }
       });
   }
 })
 
-.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $state, BACKEND_URL) {
+.controller('GroupsCtrl', function($scope, $auth, $http, $ionicPopup, $ionicModal, $state, BACKEND_URL) {
 
   // Local vars
   $scope.newGroup = {};
   $scope.groups = [];
   $scope.showMineOnly = false;
 
-  $scope.createGroup = function() {
-    if ((!$scope.newGroup.name) || ($scope.newGroup.name == "")) {
+  $ionicModal.fromTemplateUrl('templates/newGroup.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.newGroupModal = modal;
+  });
+
+  $scope.closeNewGroupModal = function() {
+    $scope.newGroupModal.hide();
+  };
+
+  $scope.showNewGroupModal = function() {
+    $scope.newGroup.name = '';
+    $scope.newGroup.homebase = '';
+    $scope.newGroupModal.show();
+  };
+
+  $scope.createNewGroup = function() {
+    if ((!$scope.newGroup.name) || ($scope.newGroup.name == '') ||
+        (!$scope.newGroup.homebase) || ($scope.newGroup.homebase == '')) {
       $ionicPopup.alert({
         title: 'Error',
-        content: 'Type a name for the new group'
+        content: 'Type a name & homebase for the new group'
       });
       return;
     }
@@ -239,8 +256,10 @@ angular.module('controllers', ['ion-datetime-picker'])
       method: 'POST'
     })
       .then(function(response) {
+        $scope.closeNewGroupModal();
         $scope.newGroup = {};
-        $state.go('app.group', {_id: response.data._id, name: response.data.name, isMember: true});
+        $state.go('app.group', {_id: response.data._id, name: response.data.name,
+          homebase: response.data.homebase, isMember: true});
       });
   };
 
@@ -315,6 +334,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       disableBack: true
     });
     $state.go('app.sessions');
+
   } else {
 
     if ($scope.sessionParams.isParticipant == null) {
@@ -331,11 +351,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       params: {sessionId: $scope.sessionParams._id}
     })
       .then(function(response) {
-        $scope.sessionParams.title = response.data.title;
-        $scope.sessionParams.nParticipants = response.data.nParticipants;
-        if (response.data.isParticipant) {
-          $scope.sessionParams.isParticipant = true;
-        }
+        $scope.sessionParams = response.data;
       });
   }
 })
@@ -365,15 +381,17 @@ angular.module('controllers', ['ion-datetime-picker'])
     newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
     $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.title = '';
+    $scope.newSession.location = '';
     $scope.newSessionModal.show();
   };
 
   // Perform the login action when the user submits the login form
   $scope.createNewSession = function() {
-    if ((!$scope.newSession.title) || ($scope.newSession.title == "")) {
+    if ((!$scope.newSession.title) || ($scope.newSession.title == "") ||
+        (!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
         title: 'Error',
-        content: 'Type a title for the new session'
+        content: 'Type a title & location for the new session'
       });
       return;
     }
@@ -396,7 +414,8 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function(response) {
         $scope.closeNewSessionModal();
         $scope.newSession = {};
-        $state.go('app.session', {_id: response.data._id, title: response.data.title, nParticipants: response.data.nParicipants, isParticipant: true});
+        $state.go('app.session', {_id: response.data._id, title: response.data.title,
+          location: response.data.location, nParticipants: response.data.nParicipants, isParticipant: true});
       }).
       catch(function(error) {
         $scope.closeNewSessionModal();

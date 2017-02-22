@@ -1,4 +1,4 @@
-<ion-view view-title="{{groupName.name}}">
+<ion-view view-title="{{groupParams.name}} - {{groupParams.homebase}}">
   <ion-content>
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.groupParams.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange()">
     Member
@@ -11,11 +11,11 @@
   	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
   	</ion-item>
   	<ion-list>
-      <ion-toggle ng-repeat="session in group.sessions" ng-show="groupParams.isMember && (!showMineOnly || session.isParticipant)"
+      <ion-toggle ng-repeat="session in groupParams.sessions" ng-show="groupParams.isMember && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants</a>
       </ion-toggle>
-  	  <ion-item ng-repeat="session in group.sessions" ng-show="!groupParams.isMember" style="cursor:pointer">
+  	  <ion-item ng-repeat="session in groupParams.sessions" ng-show="!groupParams.isMember" style="cursor:pointer,color:blue">
         <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants</a>
       </ion-item>
   	</ion-list>

@@ -1,0 +1,24 @@
+<ion-nav-bar class="bar-stable">
+  <ion-nav-back-button>
+  </ion-nav-back-button>
+  <ion-nav-buttons side="right">
+    <button ng-show="!isAuthenticated()" class="button button-small" ng-click="login()">Login</button>
+    <button ng-show="isAuthenticated()" class="button button-small" ng-click="logout()">Logout</button>
+  </ion-nav-buttons>
+</ion-nav-bar>
+<ion-nav-view name="menuContent"></ion-nav-view>
+<div class="tabs">
+  <a href="#/sessions" class="tab-item has-badge" ng-class="{'tab-item-active': isStateIncluding('session')}">
+    <i class="icon icon ion-android-walk"></i>
+    <span class="tab-title">Sessions</span>
+  </a>
+  <a href="#/groups" class="tab-item" ng-class="{'tab-item-active': isStateIncluding('group')}">
+    <i class="icon icon ion-ios-people"></i>
+    <span class="tab-title">Groups</span>
+  </a>
+  <a ng-show="isAuthenticated()" href="#/sessions" class="tab-item has-badge" ng-class="{'tab-item-active': isStateIncluding('help')}">
+    <span class="badge">3</span>
+    <i class="icon icon ion-star"></i>
+    <span class="tab-title">My Groups</span>
+  </a>
+</div>

@@ -10,10 +10,10 @@
     <ion-list>
       <ion-toggle ng-repeat="session in sessions" ng-show="isAuthenticated() && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
-        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
+        <a ng-click="goToSession(session)">{{session.title}}, {{session.location}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
       </ion-toggle>
-      <ion-item ng-repeat="session in sessions" ng-show="!isAuthenticated()" style="cursor:pointer">
-        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
+      <ion-item ng-repeat="session in sessions" ng-show="!isAuthenticated()" style="cursor:pointer,color:blue">
+        <a ng-click="goToSession(session)">{{session.title}}, {{session.location}}, {{session.nParticipants}} participants{{session.groupStr}}</a>
       </ion-item>
     </ion-list>
   </ion-content>

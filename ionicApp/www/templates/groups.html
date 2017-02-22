@@ -1,10 +1,7 @@
 <ion-view view-title="Groups">
   <ion-content>
-    <ion-item ng-show="isAuthenticated()" class="item item-input-inset">
-      <label class="item item-input-wrapper">
-        <input type="text" ng-model="newGroup.name" placeholder="Group Name">
-      </label>
-      <button ng-click="createGroup()" class="button button-small">Create<br>Group</button>
+    <ion-item ng-show="isAuthenticated()">
+      <button class="button button-block button-positive" ng-click="showNewGroupModal()">Create New Group</button>
     </ion-item>
     <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">Show My Groups Only</ion-checkbox>
     <ion-item>
@@ -13,10 +10,10 @@
     <ion-list>
       <ion-toggle ng-repeat="group in groups" ng-show="isAuthenticated() && (!showMineOnly || group.isMember)"
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="cursor:pointer">
-        <a ng-click="goToGroup(group)">{{group.name}}, {{group.nMembers}} members</a>
+        <a ng-click="goToGroup(group)">{{group.name}}, {{group.homebase}}, {{group.nMembers}} members</a>
       </ion-toggle>
-      <ion-item ng-repeat="group in groups" ng-show="!isAuthenticated()" ng-click="goToGroup(group)">
-        {{group.name}}, {{group.nMembers}} members
+      <ion-item ng-repeat="group in groups" ng-show="!isAuthenticated()" ng-click="goToGroup(group)" style="cursor:pointer,color:blue">
+        {{group.name}}, {{group.homebase}}, {{group.nMembers}} members
       </ion-item>
     </ion-list>
   </ion-content>

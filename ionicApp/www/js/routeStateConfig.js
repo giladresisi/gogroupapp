@@ -6,8 +6,8 @@ app
   $stateProvider
     .state('app', {
       abstract: true,
-      templateUrl: 'templates/menu.html',
-      controller: 'MenuCtrl'
+      templateUrl: 'templates/tabs.html',
+      controller: 'AppCtrl'
     })
     .state('app.sessions', {
       cache: false,
@@ -31,6 +31,7 @@ app
       params: {
         _id: null,
         title: null,
+        location: null,
         nParticipants: null,
         isParticipant: null
       }
@@ -57,6 +58,7 @@ app
       params: {
         _id: null,
         name: null,
+        homebase: null,
         isMember: null
       }
     });
