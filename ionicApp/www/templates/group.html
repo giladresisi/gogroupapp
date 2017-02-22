@@ -13,10 +13,14 @@
   	<ion-list>
       <ion-toggle ng-repeat="session in groupParams.sessions" ng-show="groupParams.isMember && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
-        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants</a>
+        <a ng-click="goToSession(session)">
+          {{session.title}}, {{session.location}}, {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.nParticipants}} participants
+        </a>
       </ion-toggle>
-  	  <ion-item ng-repeat="session in groupParams.sessions" ng-show="!groupParams.isMember" style="cursor:pointer,color:blue">
-        <a ng-click="goToSession(session)">{{session.title}}, {{session.nParticipants}} participants</a>
+  	  <ion-item ng-repeat="session in groupParams.sessions" ng-show="!groupParams.isMember" style="cursor:pointer">
+        <a ng-click="goToSession(session)" style="color:blue">
+          {{session.title}}, {{session.location}}, {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.nParticipants}} participants
+        </a>
       </ion-item>
   	</ion-list>
   </ion-content>

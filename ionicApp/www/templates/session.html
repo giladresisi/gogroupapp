@@ -7,7 +7,7 @@
   	  <h2 class="title"><center>Session Info</center></h2>
   	</ion-item>
   	<ion-item>
-      {{sessionParams.title}}, {{sessionParams.nParticipants}} participants
+      {{sessionParams.title}}, {{sessionParams.location}}, {{sessionParams.datetime| date: "yyyy-MM-dd H:mm"}}, {{sessionParams.nParticipants}} participants{{sessionParams.groupStr}}
     </ion-item>
   </ion-content>
 </ion-view>

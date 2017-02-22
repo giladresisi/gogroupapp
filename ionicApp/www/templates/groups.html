@@ -12,7 +12,7 @@
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="cursor:pointer">
         <a ng-click="goToGroup(group)">{{group.name}}, {{group.homebase}}, {{group.nMembers}} members</a>
       </ion-toggle>
-      <ion-item ng-repeat="group in groups" ng-show="!isAuthenticated()" ng-click="goToGroup(group)" style="cursor:pointer,color:blue">
+      <ion-item ng-repeat="group in groups" ng-show="!isAuthenticated()" ng-click="goToGroup(group)" style="cursor:pointer">
         {{group.name}}, {{group.homebase}}, {{group.nMembers}} members
       </ion-item>
     </ion-list>

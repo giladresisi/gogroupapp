@@ -213,6 +213,11 @@ angular.module('controllers', ['ion-datetime-picker'])
         if ($scope.groupParams.isMember == null) {
           $scope.groupParams.isMember = false;
         }
+        if ($scope.groupParams.sessions) {
+          $scope.groupParams.sessions.forEach(function(session, index) {
+            session.datetime = new Date(session.datetimeMS);
+          });
+        }
       });
   }
 })
@@ -352,6 +357,11 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.sessionParams = response.data;
+        $scope.sessionParams.datetime = new Date($scope.sessionParams.datetimeMS);
+        $scope.sessionParams.groupStr = '';
+        if ($scope.sessionParams.groupName) {
+          $scope.sessionParams.groupStr = ', group name: ' + $scope.sessionParams.groupName;
+        }
       });
   }
 })
@@ -458,11 +468,12 @@ angular.module('controllers', ['ion-datetime-picker'])
   $http.get(endPoint)
     .then(function(response) {
       $scope.sessions = response.data;
-      for (i = 0; i < $scope.sessions.length; i++) {
-        $scope.sessions[i].groupStr = '';
-        if ($scope.sessions[i].groupName) {
-          $scope.sessions[i].groupStr = ', group name: ' + $scope.sessions[i].groupName;
+      $scope.sessions.forEach(function(session, index) {
+        session.datetime = new Date(session.datetimeMS);
+        session.groupStr = '';
+        if (session.groupName) {
+          session.groupStr = ', group name: ' + session.groupName;
         }
-      }
+      });
     });
 });
