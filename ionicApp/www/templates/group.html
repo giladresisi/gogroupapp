@@ -1,25 +1,32 @@
-<ion-view view-title="{{groupParams.name}} - {{groupParams.homebase}}">
+<ion-view view-title="{{group.name}}">
   <ion-content>
-	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.groupParams.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange()">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange()">
     Member
     </ion-toggle>
-    <ion-item ng-show="groupParams.isMember">
+    <ion-item>
+      <center>
+        {{group.homebase}}, {{group.nMembers}} members, {{group.sessions.length}} upcoming group sessions
+      </center>
+    </ion-item>
+    <ion-item ng-show="group.isMember">
       <button class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
     </ion-item>
-    <ion-checkbox ng-show="groupParams.isMember" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
+    <ion-checkbox ng-show="group.isMember" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
   	<ion-item>
   	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
   	</ion-item>
   	<ion-list>
-      <ion-toggle ng-repeat="session in groupParams.sessions" ng-show="groupParams.isMember && (!showMineOnly || session.isParticipant)"
+      <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in group.sessions" ng-show="group.isMember && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
+        <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)">
-          {{session.title}}, {{session.location}}, {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.nParticipants}} participants
+          {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}
         </a>
       </ion-toggle>
-  	  <ion-item ng-repeat="session in groupParams.sessions" ng-show="!groupParams.isMember" style="cursor:pointer">
+  	  <ion-item class="item item-icon-left" ng-repeat="session in group.sessions" ng-show="!group.isMember" style="cursor:pointer">
+        <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)" style="color:blue">
-          {{session.title}}, {{session.location}}, {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.nParticipants}} participants
+          {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}
         </a>
       </ion-item>
   	</ion-list>

@@ -21,7 +21,7 @@ app
     })
     .state('app.session', {
       cache: false,
-      url: '/session/:_id',
+      url: '/session/:sessionId',
       views: {
         'menuContent': {
           templateUrl: 'templates/session.html',
@@ -29,11 +29,8 @@ app
         }
       },
       params: {
-        _id: null,
-        title: null,
-        location: null,
-        nParticipants: null,
-        isParticipant: null
+        sessionId: null,
+        session: null
       }
     })
     .state('app.groups', {
@@ -56,10 +53,8 @@ app
         }
       },
       params: {
-        _id: null,
-        name: null,
-        homebase: null,
-        isMember: null
+        groupId: null,
+        group: null
       }
     });
     

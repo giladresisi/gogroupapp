@@ -1,13 +1,12 @@
-<ion-view view-title="{{sessionParams.title}}">
+<ion-view view-title="{{session.title}}">
   <ion-content>
-	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.sessionParams.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange()">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange()">
     Participant
     </ion-toggle>
   	<ion-item>
-  	  <h2 class="title"><center>Session Info</center></h2>
-  	</ion-item>
-  	<ion-item>
-      {{sessionParams.title}}, {{sessionParams.location}}, {{sessionParams.datetime| date: "yyyy-MM-dd H:mm"}}, {{sessionParams.nParticipants}} participants{{sessionParams.groupStr}}
+      <center>
+        {{session.title}}, {{session.location}}, {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.nParticipants}} participants{{session.groupStr}}
+      </center>
     </ion-item>
   </ion-content>
 </ion-view>

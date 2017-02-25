@@ -1274,7 +1274,7 @@ app.get('/group/all', function(req, res) {
         console.log('get(/group/all) error: db.collection()');
         return res.status(500).send({message: err.message });
       }
-      groups.find({}, {sessions:0}).toArray(function(err, groupArr) {
+      groups.find({}, {fields:{sessions:0}}).toArray(function(err, groupArr) {
         if (err != null) {
           console.log('get(/group/all) error: collection.find()');
           return res.status(500).send({message: err.message });
@@ -1312,7 +1312,7 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
             console.log('/group/all/user) error: db.collection()');
             return res.status(500).send({message: err.message });
           }
-          groups.find({}, {sessions:0}).toArray(function(err, groupArr) {
+          groups.find({}, {fields:{sessions:0}}).toArray(function(err, groupArr) {
             if (err != null) {
               console.log('get(/group/all/user) error: collection.find()');
               return res.status(500).send({message: err.message });
@@ -1384,11 +1384,13 @@ app.get('/group/single', function(req, res) {
         console.log('get(/group/single) error: db.collection(groups)');
         return res.status(500).send({message: err.message });
       }
-      groups.findOne({"_id": new ObjectId(req.query.groupId)}, {fields:{users:0}}, function(err, group) {
+      groups.findOne({"_id": new ObjectId(req.query.groupId)}, function(err, group) {
         if (err != null) {
           console.log('get(/group/single) error: collection.findOne()');
           return res.status(500).send({message: err.message });
         }
+        group.nMembers = group.users.length;
+        delete group.users;
         for (i = 0; i < group.sessions.length; i++) {
           group.sessions[i] = {
             _id: group.sessions[i].toString()
@@ -1404,13 +1406,17 @@ app.get('/group/single', function(req, res) {
               return res.status(status).send(result);
             }
             group.sessions = sessionArr;
-            var nowMS = (new Date()).getTime();
-            group.sessions = group.sessions.filter(function(session) {
-              return session.datetimeMS >= nowMS;
-            });
-            group.sessions.sort(function(s1, s2) {
-              return s1.datetimeMS - s2.datetimeMS;
-            });
+            if (group.sessions == null) {
+              group.sessions = [];
+            } else {
+              var nowMS = (new Date()).getTime();
+              group.sessions = group.sessions.filter(function(session) {
+                return session.datetimeMS >= nowMS;
+              });
+              group.sessions.sort(function(s1, s2) {
+                return s1.datetimeMS - s2.datetimeMS;
+              });
+            }
             res.send(group);
           });
         });
@@ -1441,11 +1447,13 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
             console.log('get(/group/single/user) error: db.collection(groups)');
             return res.status(500).send({message: err.message });
           }
-          groups.findOne({"_id": new ObjectId(req.query.groupId)}, {fields:{users:0}}, function(err, group) {
+          groups.findOne({"_id": new ObjectId(req.query.groupId)}, function(err, group) {
             if (err != null) {
               console.log('get(/group/single/user) error: collection.findOne()');
               return res.status(500).send({message: err.message });
             }
+            group.nMembers = group.users.length;
+            delete group.users;
             group.isMember = false;
             if (user.groups.some(function(groupId) {
               return groupId.toString() == group._id.toString();
@@ -1468,13 +1476,17 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                   return res.status(status).send(result);
                 }
                 group.sessions = sessionArr;
-                var nowMS = (new Date()).getTime();
-                group.sessions = group.sessions.filter(function(session) {
-                  return session.datetimeMS >= nowMS;
-                });
-                group.sessions.sort(function(s1, s2) {
-                  return s1.datetimeMS - s2.datetimeMS;
-                });
+                if (group.sessions == null) {
+                  group.sessions = [];
+                } else {
+                  var nowMS = (new Date()).getTime();
+                  group.sessions = group.sessions.filter(function(session) {
+                    return session.datetimeMS >= nowMS;
+                  });
+                  group.sessions.sort(function(s1, s2) {
+                    return s1.datetimeMS - s2.datetimeMS;
+                  });
+                }
                 res.send(group);
               }, user._id.toString());
             });
@@ -1531,6 +1543,8 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
                 console.log('post(/group/create) error: collection.insertOne()');
                 return res.status(500).send({ message: err.message });
               }
+              group.nMembers = 1;
+              group.isMember = true;
               user.groups.push(group._id.toString());
               users.updateOne({"_id": new ObjectId(user._id.toString())}, {$set:{
                 groups: user.groups
