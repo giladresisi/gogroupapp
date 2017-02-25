@@ -46,7 +46,28 @@
     <script src="js/controllers.js"></script>
   </head>
 
-  <body ng-app="starter">
-    <ion-nav-view></ion-nav-view>
+  <body>
+    <div id="loadingDiv">
+      <h1>Loading app. Please wait...</h1>
+    </div>
+    <div id="appDiv">
+      <ion-nav-view></ion-nav-view>
+    </div>
+    <script>
+      angular.element(document).ready(function () {
+        if (window.cordova) {
+          console.log("Running in Cordova, will bootstrap AngularJS once 'deviceready' event fires.");
+          document.addEventListener('deviceready', function () {
+            console.log("Deviceready event has fired, bootstrapping AngularJS.");
+            document.getElementById('loadingDiv').style.display = 'none';
+            bootApp(document.getElementById('appDiv'));
+          }, false);
+        } else {
+          console.log("Running in browser, bootstrapping AngularJS now.");
+          document.getElementById('loadingDiv').style.display = 'none';
+          bootApp(document.getElementById('appDiv'));
+        }
+      });
+    </script>
   </body>
 </html>
