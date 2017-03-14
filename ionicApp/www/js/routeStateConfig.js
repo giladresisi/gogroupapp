@@ -6,6 +6,7 @@ app
   $stateProvider
     .state('app', {
       abstract: true,
+      cache: false,
       templateUrl: 'templates/tabs.html',
       controller: 'AppCtrl'
     })
@@ -55,6 +56,16 @@ app
       params: {
         groupId: null,
         group: null
+      }
+    })
+    .state('app.gs', {
+      cache: false,
+      url: '/groupSessions',
+      views: {
+        'menuContent': {
+          templateUrl: 'templates/groupSessions.html',
+          controller: 'GroupSessionsCtrl'
+        }
       }
     });
     

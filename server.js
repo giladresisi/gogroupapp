@@ -227,7 +227,8 @@ app.post('/auth/signup', function(req, res) {
             email: req.body.email,
             password: hashed,
             groups: [],
-            sessions: []
+            sessions: [],
+            unseen: []
           };
           users.insertOne(user, function(err) {
             if (err) {
@@ -314,7 +315,8 @@ app.post('/auth/google', function(req, res) {
                 picture: profile.picture.replace('sz=50', 'sz=200'),
                 displayName: profile.name,
                 groups: [],
-                sessions: []
+                sessions: [],
+                unseen: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -399,7 +401,8 @@ app.post('/auth/github', function(req, res) {
                 picture: profile.avatar_url,
                 displayName: profile.name,
                 groups: [],
-                sessions: []
+                sessions: [],
+                unseen: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -480,7 +483,8 @@ app.post('/auth/instagram', function(req, res) {
               picture: body.user.profile_picture,
               displayName: body.user.username,
               groups: [],
-              sessions: []
+              sessions: [],
+              unseen: []
             }
             users.insertOne(user, function(err) {
               if (err) {
@@ -570,7 +574,8 @@ app.post('/auth/linkedin', function(req, res) {
                 picture: profile.pictureUrl,
                 displayName: profile.firstName + ' ' + profile.lastName,
                 groups: [],
-                sessions: []
+                sessions: [],
+                unseen: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -660,7 +665,8 @@ app.post('/auth/live', function(req, res) {
                 live: profile.id,
                 displayName: profile.name,
                 groups: [],
-                sessions: []
+                sessions: [],
+                unseen: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -750,7 +756,8 @@ app.post('/auth/facebook', function(req, res) {
                 picture: 'https://graph.facebook.com/' + profile.id + '/picture?type=large',
                 displayName: profile.name,
                 groups: [],
-                sessions: []
+                sessions: [],
+                unseen: []
               }
               users.insertOne(user, function(err) {
                 if (err) {
@@ -1264,6 +1271,138 @@ app.post('/auth/unlink', ensureAuthenticated, function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
+ | GET /user/basic - Get basic user data on app start
+ |--------------------------------------------------------------------------
+ */
+app.get('/user/basic', ensureAuthenticated, function(req,res) {
+  MongoPool.getInstance(function(db) {
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('get(/user/basic) error: db,collection()');
+        return res.status(500).send({message: err.message });
+      }
+      users.findOne({"_id": new ObjectId(req.user)}, {fields:{displayName:1,unseen:1,_id:0}}, function(err, user) {
+        if (err != null) {
+          console.log('get(/user/basic) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        if (!user) {
+          console.log('get(/user/basic) error: User Not Found');
+          return res.status(400).send({ message: 'User Not Found' });
+        }
+        user.nUnseen = user.unseen.length;
+        delete user.unseen;
+        console.log('get(/user/basic) success: user: ' + JSON.stringify(user));
+        res.send(user);
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
+ | GET /user/groups/sessions - Get group sessions for groups the user is their member
+ |--------------------------------------------------------------------------
+ */
+app.get('/user/groups/sessions', ensureAuthenticated, function(req,res) {
+  MongoPool.getInstance(function(db) {
+    db.collection('users', function(err, users) {
+      if (err != null) {
+        console.log('get(/user/groups/sessions) error: db.collection(users)');
+        return res.status(500).send({message: err.message });
+      } else {
+        users.findOne({"_id": new ObjectId(req.user)}, {fields:{unseen:1,groups:1}}, function(err, user) {
+          if (err != null) {
+            console.log('get(/user/groups/sessions) error: collection.findOne(user)');
+            return res.status(500).send({message: err.message });
+          }
+          else if (!user) {
+            console.log('get(/user/groups/sessions) error: User Not Found');
+            return res.status(400).send({ message: 'User Not Found' });
+          } else {
+            if (user.groups.length == 0) {
+              console.log('get(/user/groups/sessions) success: 0 group memberships');
+              res.send([]);
+            } else {
+              var groupIDs = [];
+              user.groups.forEach(function(groupId, index) {
+                groupIDs[index] = new ObjectId(groupId);
+              });
+               db.collection('groups', function(err, groups) {
+                if (err != null) {
+                  console.log('get(/user/groups/sessions) error: db.collection(groups)');
+                  return res.status(500).send({message: err.message });
+                }
+                groups.find({ $and: [ { _id: { $in: groupIDs } }, { $where: "this.sessions.length > 0" } ] }).toArray(function(err, groupArr) {
+                  if (err != null) {
+                    console.log('get(/user/groups/sessions) error: collection.find(groups)');
+                    return res.status(500).send({message: err.message });
+                  }
+                  var sessionIDs = [];
+                  groupArr.forEach(function(group) {
+                    sessionIDs = sessionIDs.concat(group.sessions);
+                  });
+                  sessionIDs.forEach(function(sessionId, index, arr) {
+                    arr[index] = new ObjectId(sessionId);
+                  });
+                  db.collection('sessions', function(err, sessions) {
+                    if (err != null) {
+                      console.log('get(/user/groups/sessions) error: db.collection(sessions)');
+                      return res.status(500).send({message: err.message });
+                    }
+                    var nowMS = (new Date()).getTime();
+                    sessions.find({ $and: [ { _id: { $in: sessionIDs } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+                      if (err != null) {
+                        console.log('get(/user/groups/sessions) error: collection.find(groupSessions)');
+                        return res.status(500).send({message: err.message });
+                      }
+                      sessionArr.forEach(function(session, index, arr) {
+                        var g = groupArr.find(function(group) {
+                          return (group._id.toString() == session.groupId.toString());
+                        });
+                        if (g != undefined) {
+                          arr[index].groupName = g.name;
+                        }
+                        arr[index].unseen = false;
+                        if (user.unseen.some(function(sessionId) {
+                          return (sessionId.toString() == session._id.toString());
+                        })) {
+                          arr[index].unseen = true;
+                        }
+                        arr[index].isParticipant = false;
+                        if (session.users.some(function(userId) {
+                          return user._id.toString() == userId.toString();
+                        })) {
+                          arr[index].isParticipant = true;
+                        }
+                        arr[index].nParticipants = session.users.length;
+                        delete arr[index].users;
+                      });
+                      users.updateOne({"_id": new ObjectId(user._id.toString())}, {$set:{
+                        unseen: []
+                      }}, function(err) {
+                        if (err != null) {
+                          console.log('get(/user/groups/sessions) error: collection.updateOne()');
+                          return res.status(500).send({ message: err.message });
+                        } else {
+                          console.log('get(/user/groups/sessions) success: sessionArr = ' + JSON.stringify(sessionArr));
+                          res.send(sessionArr);
+                        }
+                      });
+                    });
+                  });
+                });
+              });
+            }
+          }
+        });
+      }
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
  | GET /group/all - Get all existing groups
  |--------------------------------------------------------------------------
  */
@@ -1283,7 +1422,6 @@ app.get('/group/all', function(req, res) {
           groupArr[i].nMembers = groupArr[i].users.length;
           delete groupArr[i].users;
         }
-        console.log('get(/group/all) success: groupArr = ' + JSON.stringify(groupArr));
         res.send(groupArr);
       });
     });
@@ -1327,7 +1465,6 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
               }
               delete groupArr[i].users;
             }
-            console.log('get(/group/all/user) success: groupArr = ' + JSON.stringify(groupArr));
             res.send(groupArr);
           });
         });
@@ -1335,42 +1472,6 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
     }); 
   });
 });
-
-/*
- |--------------------------------------------------------------------------
- | Aux method to add extra data to every session in an array
- |--------------------------------------------------------------------------
- */
-function addSessionsData(sessions, sessionArr, i, callback, participantId) {
-  if (sessionArr.length == 0) {
-    console.log('get(/group/single) success: no group sessions');
-    callback(null);
-  } else if (i == sessionArr.length) {
-    console.log('get(/group/single) success: sessionArr = ' + JSON.stringify(sessionArr));
-    callback(sessionArr);
-  } else {
-    sessions.findOne({"_id": new ObjectId(sessionArr[i]._id)}, function(err, session) {
-      if (err != null) {
-        console.log('get(/group/single) error: collection.findOne(sessionId)');
-        callback(sessionArr, 500, {message: err.message});
-      }
-      if (!session) {
-        console.log('get(/group/single) error: No such session');
-        callback(sessionArr, 409, {message: 'No such session'});
-      }
-      sessionArr[i].title = session.title;
-      sessionArr[i].location = session.location;
-      sessionArr[i].datetimeMS = session.datetimeMS;
-      sessionArr[i].nParticipants = session.users.length;
-      if (participantId && session.users.some(function(userId) {
-        return participantId == userId.toString();
-      })) {
-        sessionArr[i].isParticipant = true;
-      }
-      addSessionsData(sessions, sessionArr, i + 1, callback, participantId);
-    });
-  }
-};
 
 /*
  |--------------------------------------------------------------------------
@@ -1391,32 +1492,28 @@ app.get('/group/single', function(req, res) {
         }
         group.nMembers = group.users.length;
         delete group.users;
-        for (i = 0; i < group.sessions.length; i++) {
-          group.sessions[i] = {
-            _id: group.sessions[i].toString()
-          }
-        }
         db.collection('sessions', function(err, sessions) {
           if (err != null) {
             console.log('get(/group/single) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
-          addSessionsData(sessions, group.sessions, 0, function(sessionArr, status, result) {
-            if (status) {
-              return res.status(status).send(result);
+          group.sessions.forEach(function(sessionId, index, arr) {
+            arr[index] = new ObjectId(sessionId);
+          });
+          var nowMS = (new Date()).getTime();
+          sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+            if (err != null) {
+              console.log('get(/group/single) error: collection.find()');
+              return res.status(500).send({message: err.message });
             }
             group.sessions = sessionArr;
-            if (group.sessions == null) {
-              group.sessions = [];
-            } else {
-              var nowMS = (new Date()).getTime();
-              group.sessions = group.sessions.filter(function(session) {
-                return session.datetimeMS >= nowMS;
-              });
-              group.sessions.sort(function(s1, s2) {
-                return s1.datetimeMS - s2.datetimeMS;
-              });
-            }
+            group.sessions.sort(function(s1, s2) {
+              return s1.datetimeMS - s2.datetimeMS;
+            });
+            group.sessions.forEach(function(session, index, arr) {
+              arr[index].nParticipants = arr[index].users.length;
+              delete arr[index].users;
+            });
             res.send(group);
           });
         });
@@ -1460,35 +1557,36 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
             })) {
               group.isMember = true;
             }
-            for (i = 0; i < group.sessions.length; i++) {
-              group.sessions[i] = {
-                _id: group.sessions[i].toString(),
-                isParticipant: false
-              }
-            }
             db.collection('sessions', function(err, sessions) {
               if (err != null) {
                 console.log('get(/group/single/user) error: db.collection(sessions)');
                 return res.status(500).send({message: err.message });
               }
-              addSessionsData(sessions, group.sessions, 0, function(sessionArr, status, result) {
-                if (status) {
-                  return res.status(status).send(result);
+              group.sessions.forEach(function(sessionId, index, arr) {
+                arr[index] = new ObjectId(sessionId);
+              });
+              var nowMS = (new Date()).getTime();
+              sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+                if (err != null) {
+                  console.log('get(/group/single) error: collection.find()');
+                  return res.status(500).send({message: err.message });
                 }
                 group.sessions = sessionArr;
-                if (group.sessions == null) {
-                  group.sessions = [];
-                } else {
-                  var nowMS = (new Date()).getTime();
-                  group.sessions = group.sessions.filter(function(session) {
-                    return session.datetimeMS >= nowMS;
-                  });
-                  group.sessions.sort(function(s1, s2) {
-                    return s1.datetimeMS - s2.datetimeMS;
-                  });
-                }
+                group.sessions.sort(function(s1, s2) {
+                  return s1.datetimeMS - s2.datetimeMS;
+                });
+                group.sessions.forEach(function(session, index, arr) {
+                  arr[index].isParticipant = false;
+                  if (session.users.some(function(userId) {
+                    return (userId.toString() == user._id.toString());
+                  })) {
+                    arr[index].isParticipant = true;
+                  }
+                  arr[index].nParticipants = arr[index].users.length;
+                  delete arr[index].users;
+                });
                 res.send(group);
-              }, user._id.toString());
+              });
             });
           });
         });
@@ -1718,33 +1816,6 @@ app.post('/group/leave', ensureAuthenticated, function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
- | Aux method to add the group name to every session in an array (if group session)
- |--------------------------------------------------------------------------
- */
-function addGroupNameToSessions(groups, sessionArr, i, callback) {
-  if (i == sessionArr.length) {
-    console.log('get(/sessions/all) success: sessionArr = ' + JSON.stringify(sessionArr));
-    callback(sessionArr);
-  } else if (sessionArr[i].groupId != null) {
-    groups.findOne({"_id": new ObjectId(sessionArr[i].groupId.toString())}, function(err, group) {
-      if (err != null) {
-        console.log('get(/session/all) error: collection.findOne(groupId)');
-        callback(sessionArr, 500, {message: err.message});
-      }
-      if (!group) {
-        console.log('get(/session/all) error: No such group');
-        callback(sessionArr, 409, {message: 'No such group'});
-      }
-      sessionArr[i].groupName = group.name;
-      addGroupNameToSessions(groups, sessionArr, i + 1, callback);
-    });
-  } else {
-    addGroupNameToSessions(groups, sessionArr, i + 1, callback);
-  }
-};
-
-/*
- |--------------------------------------------------------------------------
  | GET /session/all - Get all existing sessions
  |--------------------------------------------------------------------------
  */
@@ -1755,31 +1826,43 @@ app.get('/session/all', function(req, res) {
         console.log('get(/session/all) error: db.collection(sessions)');
         return res.status(500).send({message: err.message });
       }
-      sessions.find({}).toArray(function(err, sessionArr) {
+      var nowMS = (new Date()).getTime();
+      sessions.find({ datetimeMS: { $gte: nowMS } }).toArray(function(err, sessionArr) {
         if (err != null) {
-          console.log('get(/session/all) error: collection.find()');
+          console.log('get(/session/all) error: collection.find(sessions)');
           return res.status(500).send({message: err.message });
         }
-        var nowMS = (new Date()).getTime();
-        sessionArr = sessionArr.filter(function(session) {
-          return session.datetimeMS >= nowMS;
-        });
         sessionArr.sort(function(s1, s2) {
           return s1.datetimeMS - s2.datetimeMS;
         });
-        for (i = 0; i < sessionArr.length; i++) {
-          sessionArr[i].nParticipants = sessionArr[i].users.length;
-          delete sessionArr[i].users;
-        }
+        var groupIDs = [];
+        sessionArr.forEach(function(session, index, arr) {
+          arr[index].nParticipants = session.users.length;
+          delete arr[index].users;
+          if (session.groupId != null) {
+            groupIDs.push(new ObjectId(session.groupId));
+          }
+        });
         db.collection('groups', function(err, groups) {
           if (err != null) {
             console.log('get(/session/all) error: db.collection(groups)');
             return res.status(500).send({message: err.message });
           }
-          addGroupNameToSessions(groups, sessionArr, 0, function(sessionArr, status, result) {
-            if (status) {
-              return res.status(status).send(result);
+          groups.find({ _id: { $in: groupIDs } }, { fields: { name: 1 } }).toArray(function(err, groupArr) {
+            if (err != null) {
+              console.log('get(/session/all) error: collection.find(groups)');
+              return res.status(500).send({message: err.message });
             }
+            sessionArr.forEach(function(session, index, arr) {
+              if (session.groupId != null) {
+                var i = groupArr.findIndex(function(group) {
+                  return (group._id.toString() == session.groupId);
+                });
+                if (i != -1) {
+                  arr[index].groupName = groupArr[i].name;
+                }
+              }
+            });
             res.send(sessionArr);
           });
         });
@@ -1810,37 +1893,49 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
             console.log('get(/session/all/user) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
-          sessions.find({}).toArray(function(err, sessionArr) {
+          var nowMS = (new Date()).getTime();
+          sessions.find({ datetimeMS: { $gte: nowMS } }).toArray(function(err, sessionArr) {
             if (err != null) {
               console.log('get(/session/all/user) error: collection.find()');
               return res.status(500).send({message: err.message });
             }
-            var nowMS = (new Date()).getTime();
-            sessionArr = sessionArr.filter(function(session) {
-              return session.datetimeMS >= nowMS;
-            });
             sessionArr.sort(function(s1, s2) {
               return s1.datetimeMS - s2.datetimeMS;
             });
-            for (i = 0; i < sessionArr.length; i++) {
-              sessionArr[i].nParticipants = sessionArr[i].users.length;
-              sessionArr[i].isParticipant = false;
-              if (sessionArr[i].users.some(function(userId) {
+            var groupIDs = [];
+            sessionArr.forEach(function(session, index, arr) {
+              arr[index].nParticipants = session.users.length;
+              arr[index].isParticipant = false;
+              if (session.users.some(function(userId) {
                 return userId.toString() == user._id.toString();
               })) {
-                sessionArr[i].isParticipant = true;
+                arr[index].isParticipant = true;
               }
-              delete sessionArr[i].users;
-            }
+              delete arr[index].users;
+              if (session.groupId != null) {
+                groupIDs.push(new ObjectId(session.groupId));
+              }
+            });
             db.collection('groups', function(err, groups) {
               if (err != null) {
                 console.log('get(/session/all/user) error: db.collection(groups)');
                 return res.status(500).send({message: err.message });
               }
-              addGroupNameToSessions(groups, sessionArr, 0, function(sessionArr, status, result) {
-                if (status) {
-                  return res.status(status).send(result);
+              groups.find({ _id: { $in: groupIDs } }, { fields: { name: 1 } }).toArray(function(err, groupArr) {
+                if (err != null) {
+                  console.log('get(/session/all) error: collection.find(groups)');
+                  return res.status(500).send({message: err.message });
                 }
+                sessionArr.forEach(function(session, index, arr) {
+                  if (session.groupId != null) {
+                    var i = groupArr.findIndex(function(group) {
+                      return (group._id.toString() == session.groupId);
+                    });
+                    if (i != -1) {
+                      arr[index].groupName = groupArr[i].name;
+                    }
+                  }
+                });
                 res.send(sessionArr);
               });
             });
@@ -1963,6 +2058,47 @@ app.get('/session/single/user', ensureAuthenticated, function(req, res) {
 
 /*
  |--------------------------------------------------------------------------
+ | Aux method to add the new group session as unseen to other group members
+ |--------------------------------------------------------------------------
+ */
+ function addUnseenGroupSession(users, members, i, creatorId, groupId, session, callback) {
+  if (i == members.length) {
+    callback(session);
+  } else if (members[i].toString() != creatorId) {
+    users.findOne({"_id": new ObjectId(members[i].toString())}, {fields:{groups:1}}, function(err, user) {
+      if (err != null) {
+        console.log('post(/session/create) error: collection.findOne(memberId)');
+        callback(session, 500, {message: err.message });
+      }
+      if (user != null) {
+        var groupIndex = user.groups.findIndex(function(group) {
+          return group.groupId.toString() == groupId;
+        });
+        if (groupIndex != -1) {
+          user.groups[groupIndex].unseenSessions.push(session._id.toString());
+          users.updateOne({"_id": new ObjectId(members[i].toString())}, {$set: {
+              groups: user.groups
+            }}, function(err) {
+              if (err) {
+                console.log('post(/session/create) error: collection.updateOne(member)');
+                callback(session, 500, {message: err.message });
+              }
+              addUnseenGroupSession(users, members, i + 1, creatorId, groupId, session, callback);
+            });
+        } else {
+          addUnseenGroupSession(users, members, i + 1, creatorId, groupId, session, callback);
+        }
+      } else {
+        addUnseenGroupSession(users, members, i + 1, creatorId, groupId, session, callback);
+      }
+    });
+  } else {
+    addUnseenGroupSession(users, members, i + 1, creatorId, groupId, session, callback);
+  }
+ };
+
+/*
+ |--------------------------------------------------------------------------
  | POST /session/create - Create Session (Group / User) & Add First User
  |--------------------------------------------------------------------------
  */
@@ -1988,7 +2124,6 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
             return res.status(500).send({message: err.message });
           }
           var session = {
-            title: req.body.title,
             location: req.body.location,
             datetimeMS: req.body.datetimeMS,
             users: [ user._id.toString() ]
@@ -2035,14 +2170,35 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                         console.log('post(/session/create) error: collection.updateOne(group)');
                         return res.status(500).send({ message: err.message });
                       }
-                      console.log('post(/session/create) success: session = ' + JSON.stringify(session));
-                      return res.status(200).send(session);
+                      // addUnseenGroupSession(users, group.users, 0, user._id.toString(),
+                      //   group._id.toString(), session, function(session, status, result) {
+                      //   if (status) {
+                      //     return res.status(status).send(result);
+                      //   }
+                      //   console.log('post(/session/create) success: session = ' + JSON.stringify(session));
+                      //   return res.status(200).send(session);
+                      // });
+                      group.users.forEach(function(userId, index, arr) {
+                        if (userId.toString() != user._id.toString()) {
+                          arr[index] = new ObjectId(userId);
+                        } else {
+                          arr.splice(index, 1);
+                        }
+                      });
+                      users.updateMany({ _id: { $in: group.users } }, { $push: { unseen: session._id.toString() } }, function(err) {
+                        if (err) {
+                          console.log('post(/session/create) error: collection.updateMany(users)');
+                          return res.status(500).send({ message: err.message });
+                        }
+                        console.log('post(/session/create) success: session = ' + JSON.stringify(session));
+                        res.send(session);
+                      });
                     });
                   });
                 });
               } else {
                 console.log('post(/session/create) success: session = ' + JSON.stringify(session));
-                return res.status(200).send(session);
+                res.send(session);
               }
             });
           });

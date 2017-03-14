@@ -8,16 +8,16 @@
 </ion-nav-bar>
 <ion-nav-view name="menuContent"></ion-nav-view>
 <div class="tabs">
-  <a href="#/sessions" class="tab-item has-badge" ng-class="{'tab-item-active': isStateIncluding('session')}">
+  <a ui-sref="app.sessions" class="tab-item" ng-class="{'tab-item-active': isStateIncluding('session')}">
     <i class="icon icon ion-android-walk"></i>
     <span class="tab-title">Sessions</span>
   </a>
-  <a href="#/groups" class="tab-item" ng-class="{'tab-item-active': isStateIncluding('group')}">
+  <a ui-sref="app.groups" class="tab-item" ng-class="{'tab-item-active': isStateIncluding('groups')}">
     <i class="icon icon ion-ios-people"></i>
     <span class="tab-title">Groups</span>
   </a>
-  <a ng-show="isAuthenticated()" href="#/sessions" class="tab-item has-badge" ng-class="{'tab-item-active': isStateIncluding('help')}">
-    <span class="badge">3</span>
+  <a ng-show="isAuthenticated()" ui-sref="app.gs" class="tab-item has-badge" ng-class="{'tab-item-active': isStateIncluding('gs')}">
+    <span class="badge" ng-show="unseenSessionsExist()">{{user.nUnseen}}</span>
     <i class="icon icon ion-star"></i>
     <span class="tab-title">My Groups</span>
   </a>
