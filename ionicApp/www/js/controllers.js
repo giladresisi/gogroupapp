@@ -234,7 +234,9 @@ angular.module('controllers', ['ion-datetime-picker'])
   } else {
 
     $scope.group = $stateParams.group;
-    $scope.group.sessions = [];
+    if ($scope.group != null) {
+      $scope.group.sessions = [];
+    }
 
     var endPoint = BACKEND_URL + 'group/single';
 
@@ -312,7 +314,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.groupInfo = function(group) {
     var templateStr = 'Name: ' + group.name + '<br>' + 'Homebase: ' + group.homebase + '<br>' +
-        '#Members: ' + group.nMembers;
+        '#Members: ' + group.nMembers + '<br>' + '#Upcoming sessions: ' + group.nUpcoming;
     $ionicPopup.alert({
       title: 'Group Info',
       template: templateStr
@@ -375,6 +377,10 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
     }
   };
+
+  $scope.goToGroup = function(groupId) {
+    $state.go('app.group', {groupId: groupId});
+  }
 
   $scope.sessionId = $stateParams.sessionId;
 

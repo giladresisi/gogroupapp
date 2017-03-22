@@ -1,5 +1,5 @@
 <ion-view view-title="{{group.name}}">
-  <ion-content>
+  <ion-content class="has-tabs" padding="true">
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange()">
     Member
     </ion-toggle>
@@ -8,9 +8,7 @@
         {{group.homebase}}, {{group.nMembers}} members, {{group.sessions.length}} upcoming group sessions
       </center>
     </ion-item>
-    <ion-item ng-show="group.isMember">
-      <button class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
-    </ion-item>
+    <button ng-show="group.isMember" class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
     <ion-checkbox ng-show="group.isMember" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
   	<ion-item>
   	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
@@ -20,13 +18,13 @@
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)">
-          {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}
+          {{session.datetime| date: "yyyy-MM-dd H:mm"}} @ {{session.location}}
         </a>
       </ion-toggle>
   	  <ion-item class="item item-icon-left" ng-repeat="session in group.sessions" ng-show="!group.isMember" style="cursor:pointer">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)" style="color:blue">
-          {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}
+          {{session.datetime| date: "yyyy-MM-dd H:mm"}} @ {{session.location}}
         </a>
       </ion-item>
   	</ion-list>

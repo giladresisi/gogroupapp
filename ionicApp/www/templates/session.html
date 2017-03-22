@@ -1,12 +1,28 @@
 <ion-view view-title="Session">
-  <ion-content>
+  <ion-content class="has-tabs" padding="true">
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange()">
     Participant
     </ion-toggle>
-  	<ion-item>
+    <ion-list>
+      <ion-item>
+        Date: {{session.datetime| date: "yyyy-MM-dd H:mm"}}
+      </ion-item>
+      <ion-item>
+        Location: {{session.location}}
+      </ion-item>
+      <ion-item>
+        #Participants: {{session.nParticipants}}
+      </ion-item>
+      <ion-item ng-show="session.groupId" style="cursor:pointer">
+        <a ng-click="goToGroup(session.groupId)" style="color:blue">
+          Group: {{session.groupName}}
+        </a>
+      </ion-item>
+    </ion-list>
+  	<!-- <ion-item>
       <center>
-        {{session.location}}, {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.nParticipants}} participants{{session.groupStr}}
+        {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}, {{session.nParticipants}} participants{{session.groupStr}}
       </center>
-    </ion-item>
+    </ion-item> -->
   </ion-content>
 </ion-view>
