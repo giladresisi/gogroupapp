@@ -1,6 +1,6 @@
 angular.module('controllers', ['ion-datetime-picker'])
 
-.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, BACKEND_URL) {
+.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, $ionicNavBarDelegate, BACKEND_URL) {
 
   $scope.loginData = {};
   $scope.signupData = {};
@@ -96,18 +96,22 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.onStateChangeSuccess = function(event, toState, toParams, fromState, fromParams) {
     if (toState.name == 'app.gs') {
       $scope.user.nUnseen = 0;
+    } else {
+      if ($scope.isAuthenticated()) {
+        $http.get(BACKEND_URL + 'user/basic')
+          .then(function(response) {
+            $scope.user = response.data;
+          })
+          .catch(function(err) {
+            console.log('Error get(/user/basic): ' + JSON.stringify(err));
+          });
+      }
     }
   };
 
-  if ($scope.isAuthenticated()) {
-    $http.get(BACKEND_URL + 'user/basic')
-      .then(function(response) {
-        $scope.user = response.data;
-      })
-      .catch(function(err) {
-        console.log('Error get(/user/basic): ' + JSON.stringify(err));
-      });
-  }
+  $scope.$on('$ionicView.enter', function(e) {
+    $ionicNavBarDelegate.showBar(true);
+  });
 
   $scope.$on('$stateChangeSuccess', $scope.onStateChangeSuccess);
 })
@@ -219,6 +223,15 @@ angular.module('controllers', ['ion-datetime-picker'])
         '#Participants: ' + session.nParticipants + '<br>' + 'When: ' + session.datetime;
     $ionicPopup.alert({
       title: 'Session Info',
+      template: templateStr
+    });
+  }
+
+  $scope.groupInfo = function() {
+    var templateStr = 'Name: ' + $scope.group.name + '<br>' + 'Homebase: ' + $scope.group.homebase + '<br>' +
+        '#Members: ' + $scope.group.nMembers + '<br>' + '#Upcoming sessions: ' + $scope.group.nUpcoming;
+    $ionicPopup.alert({
+      title: 'Group Info',
       template: templateStr
     });
   }

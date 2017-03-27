@@ -1439,24 +1439,40 @@ app.get('/group/all', function(req, res) {
             console.log('get(/group/all) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
+          var nowMS = (new Date()).getTime();
+          var nGroupsDone = 0;
           groupArr.forEach(function(group, index, arr) {
             arr[index].nMembers = group.users.length;
+            arr[index].isMember = false;
+            if (group.users.some(function(userId) {
+              return userId.toString() == user._id.toString();
+            })) {
+              arr[index].isMember = true;
+            }
             delete arr[index].users;
-            group.sessions.forEach(function(sessionId, index, arr) {
-              arr[index] = new ObjectId(sessionId);
-            });
-            var nowMS = (new Date()).getTime();
-            sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
-              if (err != null) {
-                console.log('get(/group/all) error: collection.count()');
-                return res.status(500).send({message: err.message });
-              }
-              arr[index].nUpcoming = count;
-              delete arr[index].sessions;
-              if (index == arr.length - 1) {
+            arr[index].Upcoming = 0;
+            if (group.sessions.length == 0) {
+              nGroupsDone += 1;
+              if (nGroupsDone == arr.length) {
                 res.send(arr);
               }
-            });
+            } else {
+              group.sessions.forEach(function(sessionId, i, a) {
+                a[i] = new ObjectId(sessionId);
+              });
+              sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
+                if (err != null) {
+                  console.log('get(/group/all/user) error: collection.count()');
+                  return res.status(500).send({message: err.message });
+                }
+                arr[index].nUpcoming = count;
+                delete arr[index].sessions;
+                nGroupsDone += 1;
+                if (nGroupsDone == arr.length) {
+                  res.send(arr);
+                }
+              });
+            }
           });
         });
       });
@@ -1481,21 +1497,23 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
           console.log('get(/group/all/user) error: User Not Found');
           return res.status(400).send({ message: 'User Not Found' });
         }
-        db.collection('groups', function(err, groups) {
+        db.collection('sessions', function(err, sessions) {
           if (err != null) {
-            console.log('/group/all/user) error: db.collection()');
+            console.log('get(/group/all/user) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
-          groups.find({}).toArray(function(err, groupArr) {
+          db.collection('groups', function(err, groups) {
             if (err != null) {
-              console.log('get(/group/all/user) error: collection.find()');
+              console.log('/group/all/user) error: db.collection()');
               return res.status(500).send({message: err.message });
             }
-            db.collection('sessions', function(err, sessions) {
+            groups.find({}).toArray(function(err, groupArr) {
               if (err != null) {
-                console.log('get(/group/all/user) error: db.collection(sessions)');
+                console.log('get(/group/all/user) error: collection.find()');
                 return res.status(500).send({message: err.message });
               }
+              var nowMS = (new Date()).getTime();
+              var nGroupsDone = 0;
               groupArr.forEach(function(group, index, arr) {
                 arr[index].nMembers = group.users.length;
                 arr[index].isMember = false;
@@ -1505,21 +1523,29 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
                   arr[index].isMember = true;
                 }
                 delete arr[index].users;
-                group.sessions.forEach(function(sessionId, index, arr) {
-                  arr[index] = new ObjectId(sessionId);
-                });
-                var nowMS = (new Date()).getTime();
-                sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
-                  if (err != null) {
-                    console.log('get(/group/all/user) error: collection.count()');
-                    return res.status(500).send({message: err.message });
-                  }
-                  arr[index].nUpcoming = count;
-                  delete arr[index].sessions;
-                  if (index == arr.length - 1) {
+                arr[index].Upcoming = 0;
+                if (group.sessions.length == 0) {
+                  nGroupsDone += 1;
+                  if (nGroupsDone == arr.length) {
                     res.send(arr);
                   }
-                });
+                } else {
+                  group.sessions.forEach(function(sessionId, i, a) {
+                    a[i] = new ObjectId(sessionId);
+                  });
+                  sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
+                    if (err != null) {
+                      console.log('get(/group/all/user) error: collection.count()');
+                      return res.status(500).send({message: err.message });
+                    }
+                    arr[index].nUpcoming = count;
+                    delete arr[index].sessions;
+                    nGroupsDone += 1;
+                    if (nGroupsDone == arr.length) {
+                      res.send(arr);
+                    }
+                  });
+                }
               });
             });
           });
@@ -1553,25 +1579,31 @@ app.get('/group/single', function(req, res) {
             console.log('get(/group/single) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
-          group.sessions.forEach(function(sessionId, index, arr) {
-            arr[index] = new ObjectId(sessionId);
-          });
-          var nowMS = (new Date()).getTime();
-          sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
-            if (err != null) {
-              console.log('get(/group/single) error: collection.find()');
-              return res.status(500).send({message: err.message });
-            }
-            group.sessions = sessionArr;
-            group.sessions.sort(function(s1, s2) {
-              return s1.datetimeMS - s2.datetimeMS;
-            });
-            group.sessions.forEach(function(session, index, arr) {
-              arr[index].nParticipants = arr[index].users.length;
-              delete arr[index].users;
-            });
+          group.nUpcoming = 0;
+          if (group.sessions.length == 0) {
             res.send(group);
-          });
+          } else {
+            group.sessions.forEach(function(sessionId, index, arr) {
+              arr[index] = new ObjectId(sessionId);
+            });
+            var nowMS = (new Date()).getTime();
+            sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+              if (err != null) {
+                console.log('get(/group/single) error: collection.find()');
+                return res.status(500).send({message: err.message });
+              }
+              group.nUpcoming = sessionArr.length;
+              group.sessions = sessionArr;
+              group.sessions.sort(function(s1, s2) {
+                return s1.datetimeMS - s2.datetimeMS;
+              });
+              group.sessions.forEach(function(session, index, arr) {
+                arr[index].nParticipants = arr[index].users.length;
+                delete arr[index].users;
+              });
+              res.send(group);
+            });
+          }
         });
       });
     });
@@ -1618,31 +1650,37 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                 console.log('get(/group/single/user) error: db.collection(sessions)');
                 return res.status(500).send({message: err.message });
               }
-              group.sessions.forEach(function(sessionId, index, arr) {
-                arr[index] = new ObjectId(sessionId);
-              });
-              var nowMS = (new Date()).getTime();
-              sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
-                if (err != null) {
-                  console.log('get(/group/single/user) error: collection.find()');
-                  return res.status(500).send({message: err.message });
-                }
-                group.sessions = sessionArr;
-                group.sessions.sort(function(s1, s2) {
-                  return s1.datetimeMS - s2.datetimeMS;
-                });
-                group.sessions.forEach(function(session, index, arr) {
-                  arr[index].isParticipant = false;
-                  if (session.users.some(function(userId) {
-                    return (userId.toString() == user._id.toString());
-                  })) {
-                    arr[index].isParticipant = true;
-                  }
-                  arr[index].nParticipants = arr[index].users.length;
-                  delete arr[index].users;
-                });
+              group.nUpcoming = 0;
+              if (group.sessions.length == 0) {
                 res.send(group);
-              });
+              } else {
+                group.sessions.forEach(function(sessionId, index, arr) {
+                  arr[index] = new ObjectId(sessionId);
+                });
+                var nowMS = (new Date()).getTime();
+                sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+                  if (err != null) {
+                    console.log('get(/group/single/user) error: collection.find()');
+                    return res.status(500).send({message: err.message });
+                  }
+                  group.nUpcoming = sessionArr.length;
+                  group.sessions = sessionArr;
+                  group.sessions.sort(function(s1, s2) {
+                    return s1.datetimeMS - s2.datetimeMS;
+                  });
+                  group.sessions.forEach(function(session, index, arr) {
+                    arr[index].isParticipant = false;
+                    if (session.users.some(function(userId) {
+                      return (userId.toString() == user._id.toString());
+                    })) {
+                      arr[index].isParticipant = true;
+                    }
+                    arr[index].nParticipants = arr[index].users.length;
+                    delete arr[index].users;
+                  });
+                  res.send(group);
+                });
+              }
             });
           });
         });
@@ -1699,6 +1737,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
               }
               group.nMembers = 1;
               group.isMember = true;
+              group.nUpcoming = 0;
               user.groups.push(group._id.toString());
               users.updateOne({"_id": new ObjectId(user._id.toString())}, {$set:{
                 groups: user.groups
