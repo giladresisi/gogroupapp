@@ -1458,12 +1458,6 @@ app.get('/group/all', function(req, res) {
           var nGroupsDone = 0;
           groupArr.forEach(function(group, index, arr) {
             arr[index].nMembers = group.users.length;
-            arr[index].isMember = false;
-            if (group.users.some(function(userId) {
-              return userId.toString() == user._id.toString();
-            })) {
-              arr[index].isMember = true;
-            }
             delete arr[index].users;
             arr[index].Upcoming = 0;
             if (group.sessions.length == 0) {
@@ -1477,7 +1471,7 @@ app.get('/group/all', function(req, res) {
               });
               sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
                 if (err != null) {
-                  console.log('get(/group/all/user) error: collection.count()');
+                  console.log('get(/group/all) error: collection.count()');
                   return res.status(500).send({message: err.message });
                 }
                 arr[index].nUpcoming = count;
