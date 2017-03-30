@@ -731,7 +731,7 @@ app.post('/auth/facebook', function(req, res) {
                   console.log('post(/auth/facebook) error: User not found');
                   return res.status(400).send({ message: 'User not found' });
                 }
-                user.live = profile.id;
+                user.facebook = profile.id;
                 user.picture = user.picture || 'https://graph.facebook.com/v2.3/' + profile.id + '/picture?type=large';
                 user.displayName = user.displayName || profile.name;
                 users.save(user, function(err) {
@@ -775,68 +775,83 @@ app.post('/auth/facebook', function(req, res) {
   });
 });
 
-// /*
-//  |--------------------------------------------------------------------------
-//  | Login with Yahoo
-//  |--------------------------------------------------------------------------
-//  */
-// app.post('/auth/yahoo', function(req, res) {
-//   var accessTokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
-//   var clientId = req.body.clientId;
-//   var clientSecret = config.YAHOO_SECRET;
-//   var formData = {
-//     code: req.body.code,
-//     redirect_uri: req.body.redirectUri,
-//     grant_type: 'authorization_code'
-//   };
-//   var headers = { Authorization: 'Basic ' + new Buffer(clientId + ':' + clientSecret).toString('base64') };
+/*
+ |--------------------------------------------------------------------------
+ | Login with Yahoo
+ |--------------------------------------------------------------------------
+ */
+app.post('/auth/yahoo', function(req, res) {
+  var accessTokenUrl = 'https://api.login.yahoo.com/oauth2/get_token';
+  var clientId = req.body.clientId;
+  var clientSecret = config.YAHOO_SECRET;
+  var formData = {
+    code: req.body.code,
+    redirect_uri: req.body.redirectUri,
+    grant_type: 'authorization_code'
+  };
+  var headers = { Authorization: 'Basic ' + new Buffer(clientId + ':' + clientSecret).toString('base64') };
 
-//   // Step 1. Exchange authorization code for access token.
-//   request.post({ url: accessTokenUrl, form: formData, headers: headers, json: true }, function(err, response, body) {
-//     var socialApiUrl = 'https://social.yahooapis.com/v1/user/' + body.xoauth_yahoo_guid + '/profile?format=json';
-//     var headers = { Authorization: 'Bearer ' + body.access_token };
+  // Step 1. Exchange authorization code for access token.
+  request.post({ url: accessTokenUrl, form: formData, headers: headers, json: true }, function(err, response, body) {
+    var socialApiUrl = 'https://social.yahooapis.com/v1/user/' + body.xoauth_yahoo_guid + '/profile?format=json';
+    var headers = { Authorization: 'Bearer ' + body.access_token };
 
-//     // Step 2. Retrieve profile information about the current user.
-//     request.get({ url: socialApiUrl, headers: headers, json: true }, function(err, response, body) {
+    // Step 2. Retrieve profile information about the current user.
+    request.get({ url: socialApiUrl, headers: headers, json: true }, function(err, response, body) {
 
-//       // Step 3a. Link user accounts.
-//       if (req.header('Authorization')) {
-//         User.findOne({ yahoo: body.profile.guid }, function(err, existingUser) {
-//           if (existingUser) {
-//             return res.status(409).send({ message: 'There is already a Yahoo account that belongs to you' });
-//           }
-//           var token = req.header('Authorization').split(' ')[1];
-//           var payload = jwt.decode(token, config.TOKEN_SECRET);
-//           User.findById(payload.sub, function(err, user) {
-//             if (!user) {
-//               return res.status(400).send({ message: 'User not found' });
-//             }
-//             user.yahoo = body.profile.guid;
-//             user.displayName = user.displayName || body.profile.nickname;
-//             user.save(function() {
-//               var token = createJWT(user);
-//               res.send({ token: token });
-//             });
-//           });
-//         });
-//       } else {
-//         // Step 3b. Create a new user account or return an existing one.
-//         User.findOne({ yahoo: body.profile.guid }, function(err, existingUser) {
-//           if (existingUser) {
-//             return res.send({ token: createJWT(existingUser) });
-//           }
-//           var user = new User();
-//           user.yahoo = body.profile.guid;
-//           user.displayName = body.profile.nickname;
-//           user.save(function() {
-//             var token = createJWT(user);
-//             res.send({ token: token });
-//           });
-//         });
-//       }
-//     });
-//   });
-// });
+      // Step 3a. Link user accounts.
+      if (req.header('Authorization')) {
+        users.findOne({ yahoo: body.profile.guid }, function(err, existingUser) {
+          if (existingUser) {
+            console.log('post(/auth/yahoo) error: existing yahoo account');
+            return res.status(409).send({ message: 'There is already a Yahoo account that belongs to you' });
+          }
+          var token = req.header('Authorization').split(' ')[1];
+          var payload = jwt.decode(token, config.TOKEN_SECRET);
+          users.findOne({"_id": new ObjectId(payload.sub)}, function(err, user) {
+            if (!user) {
+              console.log('post(/auth/yahoo) error: User not found');
+              return res.status(400).send({ message: 'User not found' });
+            }
+            user.yahoo = body.profile.guid;
+            user.displayName = user.displayName || body.profile.nickname;
+            users.save(user, function(err) {
+              if (err) {
+                console.log('post(/auth/yahoo) error: collection.save()');
+                return res.status(500).send({ message: err.message });
+              }
+              var token = createJWT(user);
+              return res.send({ token: token });
+            });
+          });
+        });
+      } else {
+        // Step 3b. Create a new user account or return an existing one.
+        users.findOne({ yahoo: body.profile.guid }, function(err, existingUser) {
+          if (existingUser) {
+            console.log('post(/auth/yahoo) returning existing yahoo account');
+            return res.send({ token: createJWT(existingUser) });
+          }
+          var user = {
+            yahoo: body.profile.guid,
+            displayName: body.profile.nickname,
+            groups: [],
+            sessions: [],
+            unseen: []
+          }
+          users.insertOne(user, function(err) {
+            if (err) {
+              console.log('post(/auth/yahoo) error: collection.insertOne()');
+              return res.status(500).send({ message: err.message });
+            }
+            var token = createJWT(user);
+            return res.send({ token: token });
+          });
+        });
+      }
+    });
+  });
+});
 
 // /*
 //  |--------------------------------------------------------------------------
