@@ -2379,7 +2379,10 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
                 return res.status(500).send({ message: err.message });
               }
               user.sessions.push(session._id.toString());
-              removeOldUserSessions(sessions, users, user, session, function(session, err) {
+              var nowMS = new Date();
+              nowMS.setMinutes(Math.floor(nowMS.getMinutes() / 15) * 15);
+              nowMS = nowMS.getTime();
+              removeOldUserSessions(sessions, users, user, session, nowMS, function(session, err) {
                 if (err != null) {
                   return res.status(500).send({ message: err.message });
                 }
@@ -2429,6 +2432,9 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
               console.log('post(/session/leave) error: No such session');
               return res.status(409).send({ message: 'No such session' });
             }
+            var nowMS = new Date();
+            nowMS.setMinutes(Math.floor(nowMS.getMinutes() / 15) * 15);
+            nowMS = nowMS.getTime();
             var userFound = false;
             for (i = 0; i < session.users.length; i++) {
               if (session.users[i].toString() == user._id.toString()) {
@@ -2446,7 +2452,7 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
                     if (user.sessions[j].toString() == session._id.toString()) {
                       sessionFound = true;
                       user.sessions.splice(j, 1);
-                      removeOldUserSessions(sessions, users, user, session, function(session, err) {
+                      removeOldUserSessions(sessions, users, user, session, nowMS, function(session, err) {
                         if (err != null) {
                           return res.status(500).send({ message: err.message });
                         }

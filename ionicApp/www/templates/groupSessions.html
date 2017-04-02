@@ -1,8 +1,8 @@
-<ion-view view-title="Group Sessions">
+<ion-view view-title="ריצות קבוצתיות">
   <ion-content class="has-tabs" padding="true">
-    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
+    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">רק ריצות בהשתתפותי</ion-checkbox>
     <ion-item>
-      <h2 class="title"><center>Upcoming Group Sessions</center></h2>
+      <h2 class="title"><center>ריצות קבוצתיות קרובות</center></h2>
     </ion-item>
     <ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in sessions" ng-show="(!showMineOnly || session.isParticipant)"

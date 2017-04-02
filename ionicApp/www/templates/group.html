@@ -1,14 +1,14 @@
-<ion-view view-title="Group {{group.name}}">
+<ion-view view-title="{{group.name}}">
   <ion-content class="has-tabs" padding="true">
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.group.isMember" class="item item-toggle item-icon-left"
       toggle-class="toggle-calm" ng-change="onMembershipChange()">
       <i class="icon ion-ios-information-outline positive" ng-click="groupInfo()" style="cursor:pointer"></i>
-      Member
+      חבר בקבוצה
     </ion-toggle>
-    <button ng-show="group.isMember" class="button button-block button-positive" ng-click="showNewSessionModal()">Create New Session</button>
-    <ion-checkbox ng-show="group.isMember" ng-model="showMineOnly">Show My Sessions Only</ion-checkbox>
+    <button ng-show="group.isMember" class="button button-block button-positive" ng-click="showNewSessionModal()">ריצה קבוצתית חדשה</button>
+    <ion-checkbox ng-show="group.isMember" ng-model="showMineOnly">רק ריצות בהשתתפותי</ion-checkbox>
   	<ion-item>
-  	  <h2 class="title"><center>Incoming Group Sessions</center></h2>
+  	  <h2 class="title"><center>ריצות קבוצתיות קרובות</center></h2>
   	</ion-item>
   	<ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in group.sessions" ng-show="group.isMember && (!showMineOnly || session.isParticipant)"

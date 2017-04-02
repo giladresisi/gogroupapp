@@ -219,19 +219,19 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.sessionInfo = function(session) {
-    var templateStr = 'Location: ' + session.location + '<br>' +
-        '#Participants: ' + session.nParticipants + '<br>' + 'When: ' + session.datetime;
+    var templateStr = 'מקום: ' + session.location + '<br>' +
+        '#משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetime;
     $ionicPopup.alert({
-      title: 'Session Info',
+      title: 'מידע על ריצה',
       template: templateStr
     });
   }
 
   $scope.groupInfo = function() {
-    var templateStr = 'Name: ' + $scope.group.name + '<br>' + 'Homebase: ' + $scope.group.homebase + '<br>' +
-        '#Members: ' + $scope.group.nMembers + '<br>' + '#Upcoming sessions: ' + $scope.group.nUpcoming;
+    var templateStr = 'שם הקבוצה: ' + $scope.group.name + '<br>' + 'בסיס האם: ' + $scope.group.homebase + '<br>' +
+        '#משתתפים: ' + $scope.group.nMembers + '<br>' + '#ריצות קרובות: ' + $scope.group.nUpcoming;
     $ionicPopup.alert({
-      title: 'Group Info',
+      title: 'מידע על הקבוצה',
       template: templateStr
     });
   }
@@ -326,10 +326,10 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.groupInfo = function(group) {
-    var templateStr = 'Name: ' + group.name + '<br>' + 'Homebase: ' + group.homebase + '<br>' +
-        '#Members: ' + group.nMembers + '<br>' + '#Upcoming sessions: ' + group.nUpcoming;
+    var templateStr = 'שם הקבוצה: ' + group.name + '<br>' + 'בסיס האם: ' + group.homebase + '<br>' +
+        '#משתתפים: ' + group.nMembers + '<br>' + '#ריצות קרובות: ' + group.nUpcoming;
     $ionicPopup.alert({
-      title: 'Group Info',
+      title: 'מידע על קבוצה',
       template: templateStr
     });
   }
@@ -522,13 +522,13 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.sessionInfo = function(session) {
-    var templateStr = 'Location: ' + session.location + '<br>' +
-        '#Participants: ' + session.nParticipants + '<br>' + 'When: ' + session.datetime;
+    var templateStr = 'מיקום: ' + session.location + '<br>' +
+        '#משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetime;
     if (session.groupName != null) {
       templateStr += '<br>' + 'Group: ' + session.groupName;
     }
     $ionicPopup.alert({
-      title: 'Session Info',
+      title: 'מידע על הריצה',
       template: templateStr
     });
   }
@@ -581,13 +581,13 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.sessionInfo = function(session) {
-    var templateStr = 'Location: ' + session.location + '<br>' +
-        '#Participants: ' + session.nParticipants + '<br>' + 'When: ' + session.datetime;
+    var templateStr = 'מיקום: ' + session.location + '<br>' +
+        '#משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetime;
     if (session.groupName != null) {
       templateStr += '<br>' + 'Group: ' + session.groupName;
     }
     $ionicPopup.alert({
-      title: 'Session Info',
+      title: 'מידע על ריצה',
       template: templateStr
     });
   }
