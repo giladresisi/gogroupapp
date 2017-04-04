@@ -1,32 +1,30 @@
 <ion-modal-view>
   <ion-header-bar>
-    <h1 class="title">Signup</h1>
+    <h1 class="title">הרשמה</h1>
     <div class="buttons">
-      <button class="button button-clear" ng-click="closeSignup()">Close</button>
+      <button class="button button-positive" ng-click="closeSignup()">סגור</button>
     </div>
   </ion-header-bar>
   <ion-content>
     <form ng-submit="doSignup()" name="signupForm">
       <div class="list">
         <label class="item item-input">
-          <span class="input-label">Name</span>
-          <input type="text" ng-model="signupData.displayName" placeholder="Your Name" required autofocus>
+          <span class="input-label">שם</span>
+          <input type="text" ng-model="signupData.displayName" placeholder="שם מלא" required autofocus>
         </label>
         <label class="item item-input">
-          <span class="input-label">Email</span>
-          <input type="email" ng-model="signupData.email" placeholder="Your Email" required>
+          <span class="input-label">אימייל</span>
+          <input type="email" ng-model="signupData.email" placeholder="האימייל שלך" required>
         </label>
         <label class="item item-input">
-          <span class="input-label">Password</span>
-          <input type="password" ng-model="signupData.password" placeholder="Choose Password" required>
+          <span class="input-label">סיסמא</span>
+          <input type="password" ng-model="signupData.password" placeholder="בחר סיסמא" required>
         </label>
-        <label class="item">
-          <button class="button button-block button-positive" ng-disabled="signupForm.$invalid" type="submit">Sign up</button>
-        </label>
+        <button class="button button-block button-positive" ng-disabled="signupForm.$invalid" type="submit">הירשם</button>
       </div>
     </form>
     <p class="text-center text-muted">
-      <small>Already have an account? <a ng-click="signupToLogin()" style="cursor:pointer">Log in</a></small>
+      <small>כבר יש לך חשבון? <a ng-click="signupToLogin()" style="cursor:pointer;display:inline">התחבר</a></small>
     </p>
   </ion-content>
 </ion-modal-view>

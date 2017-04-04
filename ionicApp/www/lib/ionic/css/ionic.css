@@ -4080,7 +4080,8 @@ a.subdued {
   .bar .title + .buttons {
     position: absolute;
     top: 5px;
-    right: 5px;
+    /*right: 5px;*/
+    left: 5px;
     bottom: 5px; }
 
 .platform-android .nav-bar-has-subheader .bar {
