@@ -5,8 +5,8 @@
       <i class="icon ion-ios-information-outline positive" ng-click="groupInfo()" style="cursor:pointer"></i>
       חבר בקבוצה
     </ion-toggle>
-    <button ng-show="group.isMember" class="button button-block button-positive" ng-click="showNewSessionModal()">ריצה קבוצתית חדשה</button>
-    <ion-checkbox ng-show="group.isMember" ng-model="showMineOnly">רק ריצות בהשתתפותי</ion-checkbox>
+    <button ng-show="(group.isMember && isAuthenticated())" class="button button-block button-positive" ng-click="showNewSessionModal()">ריצה קבוצתית חדשה</button>
+    <ion-checkbox ng-show="(group.isMember && isAuthenticated())" ng-model="showMineOnly">רק ריצות בהשתתפותי</ion-checkbox>
   	<ion-item>
   	  <h2 class="title"><center>ריצות קבוצתיות קרובות</center></h2>
   	</ion-item>
