@@ -10,13 +10,13 @@
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)">
-          {{session.datetime| date: "yyyy-MM-dd H:mm"}} @ {{session.location}}
+          {{session.datetime| date: "dd.MM, H:mm"}}, {{session.location}}
         </a>
       </ion-toggle>
       <ion-item class="item item-icon-left" ng-repeat="session in sessions" ng-show="!isAuthenticated()" style="cursor:pointer">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)" style="color:blue">
-          {{session.datetime| date: "yyyy-MM-dd H:mm"}} @ {{session.location}}
+          {{session.datetime| date: "dd.MM, H:mm"}}, {{session.location}}
         </a>
       </ion-item>
     </ion-list>

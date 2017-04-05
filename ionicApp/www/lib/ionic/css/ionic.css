@@ -8172,7 +8172,7 @@ input:checked + .checkbox-icon:after {
 
 .item-toggle,
 .item-toggle.item-complex .item-content {
-  padding-right: 99px; }
+  padding-right: 75px; }
 
 .item-toggle.item-complex {
   padding-right: 0; }

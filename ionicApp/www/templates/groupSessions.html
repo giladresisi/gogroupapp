@@ -10,7 +10,7 @@
         ng-style="cursor:pointer,'background-color':sessionBGColor(session)">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)">
-          {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}
+          {{session.datetime| date: "dd.MM, H:mm"}}, {{session.location}}
         </a>
       </ion-toggle>
     </ion-list>
