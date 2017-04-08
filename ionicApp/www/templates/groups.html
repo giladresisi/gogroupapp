@@ -1,10 +1,8 @@
-<ion-view view-title="קבוצות">
+<ion-view>
+  <ion-nav-title>קבוצות</ion-nav-title>
   <ion-content class="has-tabs" padding="true">
-    <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewGroupModal()">התחל קבוצה חדשה</button>
+    <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewGroupModal()">קבוצה חדשה</button>
     <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">רק קבוצות שלי</ion-checkbox>
-    <ion-item>
-      <h2 class="title"><center>קבוצות קיימות</center></h2>
-    </ion-item>
     <ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="group in groups" ng-show="isAuthenticated() && (!showMineOnly || group.isMember)"
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="cursor:pointer">

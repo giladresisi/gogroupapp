@@ -1,22 +1,20 @@
-<ion-view view-title="ריצות">
+<ion-view>
+  <ion-nav-title>ריצות</ion-nav-title>
   <ion-content class="has-tabs" padding="true">
     <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewSessionModal()">ריצה חדשה</button>
     <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">רק ריצות בהשתתפותי</ion-checkbox>
-    <ion-item>
-      <h2 class="title"><center>ריצות קרובות</center></h2>
-    </ion-item>
     <ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in sessions" ng-show="isAuthenticated() && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)">
-          {{session.datetime| date: "dd.MM, H:mm"}}, {{session.location}}
+          {{session.datetimeStr}}, {{session.location}}
         </a>
       </ion-toggle>
       <ion-item class="item item-icon-left" ng-repeat="session in sessions" ng-show="!isAuthenticated()" style="cursor:pointer">
         <i class="icon ion-ios-information-outline positive" ng-click="sessionInfo(session)"></i>
         <a ng-click="goToSession(session)" style="color:blue">
-          {{session.datetime| date: "dd.MM, H:mm"}}, {{session.location}}
+          {{session.datetimeStr}}, {{session.location}}
         </a>
       </ion-item>
     </ion-list>

@@ -117,7 +117,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 })
 
 .controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup,
-  $ionicModal, $stateParams, $state, $ionicHistory, BACKEND_URL) {
+  $ionicModal, $stateParams, $state, $ionicHistory, $filter, BACKEND_URL) {
 
   $scope.groupId = {};
   $scope.group = {};
@@ -220,7 +220,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.sessionInfo = function(session) {
     var templateStr = 'מקום: ' + session.location + '<br>' +
-        '#משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetime;
+        'משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetimeStr;
     $ionicPopup.alert({
       title: 'מידע על ריצה',
       template: templateStr
@@ -229,7 +229,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.groupInfo = function() {
     var templateStr = 'שם הקבוצה: ' + $scope.group.name + '<br>' + 'בסיס האם: ' + $scope.group.homebase + '<br>' +
-        '#משתתפים: ' + $scope.group.nMembers + '<br>' + '#ריצות קרובות: ' + $scope.group.nUpcoming;
+        'משתתפים: ' + $scope.group.nMembers + '<br>' + 'ריצות קרובות: ' + $scope.group.nUpcoming;
     $ionicPopup.alert({
       title: 'מידע על הקבוצה',
       template: templateStr
@@ -262,11 +262,13 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.group = response.data;
+        console.log('Name: ' + $scope.group.name);
         if ($scope.group.isMember == null) {
           $scope.group.isMember = false;
         }
-        $scope.group.sessions.forEach(function(session, index) {
-          session.datetime = new Date(session.datetimeMS);
+        $scope.group.sessions.forEach(function(session, index, arr) {
+          arr[index].datetime = new Date(session.datetimeMS);
+          arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
         });
       });
   }
@@ -327,7 +329,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.groupInfo = function(group) {
     var templateStr = 'שם הקבוצה: ' + group.name + '<br>' + 'בסיס האם: ' + group.homebase + '<br>' +
-        '#משתתפים: ' + group.nMembers + '<br>' + '#ריצות קרובות: ' + group.nUpcoming;
+        'משתתפים: ' + group.nMembers + '<br>' + 'ריצות קרובות: ' + group.nUpcoming;
     $ionicPopup.alert({
       title: 'מידע על קבוצה',
       template: templateStr
@@ -364,7 +366,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     });
 })
 
-.controller('SessionCtrl', function($scope, $auth, $http, $stateParams, $state, $ionicHistory, BACKEND_URL) {
+.controller('SessionCtrl', function($scope, $auth, $http, $stateParams, $state, $ionicHistory, $filter, BACKEND_URL) {
 
   $scope.sessionId = {};
   $scope.session = {};
@@ -427,6 +429,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function(response) {
         $scope.session = response.data;
         $scope.session.datetime = new Date($scope.session.datetimeMS);
+        $scope.session.datetimeStr = $filter('date')($scope.session.datetime, "dd.MM, H:mm");
         $scope.session.groupStr = '';
         if ($scope.session.groupName) {
           $scope.session.groupStr = ', group name: ' + $scope.session.groupName;
@@ -435,7 +438,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 })
 
-.controller('SessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, $ionicModal, BACKEND_URL) {
+.controller('SessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, $ionicModal, $filter, BACKEND_URL) {
 
   // Local vars
   $scope.newSession = {};
@@ -523,9 +526,9 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.sessionInfo = function(session) {
     var templateStr = 'מיקום: ' + session.location + '<br>' +
-        '#משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetime;
+        'משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetimeStr;
     if (session.groupName != null) {
-      templateStr += '<br>' + 'Group: ' + session.groupName;
+      templateStr += '<br>' + 'קבוצה: ' + session.groupName;
     }
     $ionicPopup.alert({
       title: 'מידע על הריצה',
@@ -542,12 +545,13 @@ angular.module('controllers', ['ion-datetime-picker'])
   $http.get(endPoint)
     .then(function(response) {
       $scope.sessions = response.data;
-      $scope.sessions.forEach(function(session, index) {
-        session.datetime = new Date(session.datetimeMS);
+      $scope.sessions.forEach(function(session, index, arr) {
+        arr[index].datetime = new Date(session.datetimeMS);
+        arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
       });
     });
 })
-.controller('GroupSessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, BACKEND_URL) {
+.controller('GroupSessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, $filter, BACKEND_URL) {
 
   // Local vars
   $scope.nUnseen = 0;
@@ -582,7 +586,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.sessionInfo = function(session) {
     var templateStr = 'מיקום: ' + session.location + '<br>' +
-        '#משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetime;
+        'משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetimeStr;
     if (session.groupName != null) {
       templateStr += '<br>' + 'Group: ' + session.groupName;
     }
@@ -603,8 +607,9 @@ angular.module('controllers', ['ion-datetime-picker'])
   $http.get(BACKEND_URL + 'user/groups/sessions')
     .then(function(response) {
       $scope.sessions = response.data;
-      $scope.sessions.forEach(function(session, index) {
-        session.datetime = new Date(session.datetimeMS);
+      $scope.sessions.forEach(function(session, index, arr) {
+        arr[index].datetime = new Date(session.datetimeMS);
+        arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
         if (session.unseen) {
           $scope.nUnseen++;
         }

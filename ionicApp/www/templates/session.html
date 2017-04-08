@@ -1,17 +1,18 @@
-<ion-view view-title="ריצה">
+<ion-view>
+  <ion-nav-title>ריצה</ion-nav-title>
   <ion-content class="has-tabs" padding="true">
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange()">
     משתתף בריצה
     </ion-toggle>
     <ion-list>
       <ion-item>
-        מתי: {{session.datetime| date: "yyyy-MM-dd H:mm"}}
+        מתי: {{session.datetimeStr}}
       </ion-item>
       <ion-item>
         מיקום: {{session.location}}
       </ion-item>
       <ion-item>
-        #משתתפים: {{session.nParticipants}}
+        משתתפים: {{session.nParticipants}}
       </ion-item>
       <ion-item ng-show="session.groupId" style="cursor:pointer">
         <a ng-click="goToGroup(session.groupId)" style="color:blue">
@@ -19,10 +20,5 @@
         </a>
       </ion-item>
     </ion-list>
-  	<!-- <ion-item>
-      <center>
-        {{session.datetime| date: "yyyy-MM-dd H:mm"}}, {{session.location}}, {{session.nParticipants}} participants{{session.groupStr}}
-      </center>
-    </ion-item> -->
   </ion-content>
 </ion-view>
