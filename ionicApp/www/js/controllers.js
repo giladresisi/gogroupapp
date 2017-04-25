@@ -138,22 +138,29 @@ angular.module('controllers', ['ion-datetime-picker'])
     var newSessionDatetime = new Date();
     newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
     $scope.newSession.datetime = newSessionDatetime;
-    $scope.newSession.location = '';
+    $scope.newSession.location = $scope.group.homebase;
     $scope.newSessionModal.show();
   };
 
   $scope.createNewSession = function() {
     if ((!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
-        title: 'Error',
-        content: 'Type a location for the new session'
+        title: 'תקלה',
+        content: 'הקלד מיקום לפעילות'
+      });
+      return;
+    }
+    if ($scope.newSession.location.length > 15) {
+      $ionicPopup.alert({
+        title: 'תקלה',
+        content: 'אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר'
       });
       return;
     }
     if ($scope.newSession.datetime < new Date()) {
       $ionicPopup.alert({
-        title: 'Error',
-        content: 'New session must be in the future'
+        title: 'תקלה',
+        content: 'זמן הפעילות חייב להיות בעתיד'
       });
       return;
     }
@@ -219,17 +226,17 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.sessionInfo = function(session) {
-    var templateStr = 'מקום: ' + session.location + '<br>' +
+    var templateStr = 'מיקום: ' + session.location + '<br>' +
         'משתתפים: ' + session.nParticipants + '<br>' + 'מתי: ' + session.datetimeStr;
     $ionicPopup.alert({
-      title: 'מידע על ריצה',
+      title: 'מידע על הפעילות',
       template: templateStr
     });
   }
 
   $scope.groupInfo = function() {
-    var templateStr = 'שם הקבוצה: ' + $scope.group.name + '<br>' + 'בסיס האם: ' + $scope.group.homebase + '<br>' +
-        'משתתפים: ' + $scope.group.nMembers + '<br>' + 'ריצות קרובות: ' + $scope.group.nUpcoming;
+    var templateStr = 'שם הקבוצה: ' + $scope.group.name + '<br>' + 'מקום מפגש קבוע: ' + $scope.group.homebase + '<br>' +
+        'חברים: ' + $scope.group.nMembers + '<br>' + 'פעילויות קרובות: ' + $scope.group.nUpcoming;
     $ionicPopup.alert({
       title: 'מידע על הקבוצה',
       template: templateStr
@@ -262,7 +269,6 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.group = response.data;
-        console.log('Name: ' + $scope.group.name);
         if ($scope.group.isMember == null) {
           $scope.group.isMember = false;
         }
@@ -301,8 +307,16 @@ angular.module('controllers', ['ion-datetime-picker'])
     if ((!$scope.newGroup.name) || ($scope.newGroup.name == '') ||
         (!$scope.newGroup.homebase) || ($scope.newGroup.homebase == '')) {
       $ionicPopup.alert({
-        title: 'Error',
-        content: 'Type a name & homebase for the new group'
+        title: 'תקלה',
+        content: 'הקלד שם ומקום מפגש קבוע לקבוצה'
+      });
+      return;
+    }
+    if (($scope.newGroup.name.length > 15) ||
+        ($scope.newGroup.homebase.length > 15)) {
+      $ionicPopup.alert({
+        title: 'תקלה',
+        content: 'אורכי שם קבוצה ומקום מפגש קבוע חייב להיות עד 15 תווים'
       });
       return;
     }
@@ -328,10 +342,10 @@ angular.module('controllers', ['ion-datetime-picker'])
   }
 
   $scope.groupInfo = function(group) {
-    var templateStr = 'שם הקבוצה: ' + group.name + '<br>' + 'בסיס האם: ' + group.homebase + '<br>' +
-        'משתתפים: ' + group.nMembers + '<br>' + 'ריצות קרובות: ' + group.nUpcoming;
+    var templateStr = 'שם הקבוצה: ' + group.name + '<br>' + 'מקום מפגש קבוע: ' + group.homebase + '<br>' +
+        'משתתפים: ' + group.nMembers + '<br>' + 'פעילויות קרובות: ' + group.nUpcoming;
     $ionicPopup.alert({
-      title: 'מידע על קבוצה',
+      title: 'מידע על הקבוצה',
       template: templateStr
     });
   }
@@ -470,15 +484,22 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.createNewSession = function() {
     if ((!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
-        title: 'Error',
-        content: 'Type a location for the new session'
+        title: 'תקלה',
+        content: 'הקלד מיקום לפעילות'
+      });
+      return;
+    }
+    if ($scope.newSession.location.length > 15) {
+      $ionicPopup.alert({
+        title: 'תקלה',
+        content: 'אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר'
       });
       return;
     }
     if ($scope.newSession.datetime < new Date()) {
       $ionicPopup.alert({
-        title: 'Error',
-        content: 'New session must be in the future'
+        title: 'תקלה',
+        content: 'זמן הפעילות חייב להיות בעתיד'
       });
       return;
     }
@@ -531,7 +552,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       templateStr += '<br>' + 'קבוצה: ' + session.groupName;
     }
     $ionicPopup.alert({
-      title: 'מידע על הריצה',
+      title: 'מידע על הפעילות',
       template: templateStr
     });
   }
@@ -554,8 +575,10 @@ angular.module('controllers', ['ion-datetime-picker'])
 .controller('GroupSessionsCtrl', function($scope, $auth, $http, $state, $ionicPopup, $filter, BACKEND_URL) {
 
   // Local vars
-  $scope.nUnseen = 0;
-  $scope.groupSessions = [];
+  // $scope.nUnseen = 0;
+  // $scope.sessions = [];
+  $scope.unseen = [];
+  $scope.seen = [];
   $scope.showMineOnly = false;
 
   $scope.isAuthenticated = function() {
@@ -591,28 +614,38 @@ angular.module('controllers', ['ion-datetime-picker'])
       templateStr += '<br>' + 'Group: ' + session.groupName;
     }
     $ionicPopup.alert({
-      title: 'מידע על ריצה',
+      title: 'מידע על הפעילות',
       template: templateStr
     });
   }
 
-  $scope.sessionBGColor = function(session) {
-    if (session.unseen) {
-      return '#F0F8FF';
-    } else {
-      return 'white';
-    }
-  }
+  // $scope.sessionBGColor = function(session) {
+  //   if (session.unseen) {
+  //     return '#F0F8FF';
+  //   } else {
+  //     return 'white';
+  //   }
+  // }
 
   $http.get(BACKEND_URL + 'user/groups/sessions')
     .then(function(response) {
-      $scope.sessions = response.data;
-      $scope.sessions.forEach(function(session, index, arr) {
+      $scope.unseen = response.data.unseen;
+      $scope.seen = response.data.seen;
+      $scope.unseen.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
         arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
-        if (session.unseen) {
-          $scope.nUnseen++;
-        }
       });
+      $scope.seen.forEach(function(session, index, arr) {
+        arr[index].datetime = new Date(session.datetimeMS);
+        arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
+      });
+      // $scope.sessions = response.data;
+      // $scope.sessions.forEach(function(session, index, arr) {
+      //   arr[index].datetime = new Date(session.datetimeMS);
+      //   arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
+      //   if (session.unseen) {
+      //     $scope.nUnseen++;
+      //   }
+      // });
     });
 });

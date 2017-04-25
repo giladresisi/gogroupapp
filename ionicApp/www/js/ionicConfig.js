@@ -2,5 +2,5 @@
 
 app
 .config(function($ionicConfigProvider) {
-	$ionicConfigProvider.navBar.positionSecondaryButtons('left');
+	$ionicConfigProvider.backButton.text('חזור');
 });

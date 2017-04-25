@@ -1,18 +1,26 @@
 <ion-view>
-  <ion-nav-title>קבוצות</ion-nav-title>
+  <ion-nav-title>כל הקבוצות</ion-nav-title>
   <ion-content class="has-tabs" padding="true">
-    <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewGroupModal()">קבוצה חדשה</button>
-    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">רק קבוצות שלי</ion-checkbox>
+    <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewGroupModal()">
+      צור קבוצה חדשה
+    </button>
+    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">
+      הצג רק קבוצות בהן אני חבר
+    </ion-checkbox>
     <ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="group in groups" ng-show="isAuthenticated() && (!showMineOnly || group.isMember)"
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="cursor:pointer">
-        <i class="icon ion-ios-information-outline positive" ng-click="groupInfo(group)"></i>
+        <i class="icon ion-ios-information-empty positive" ng-click="groupInfo(group)">
+          <span class="badge icon-badge">{{group.nMembers}}</span>
+        </i>
         <a ng-click="goToGroup(group)">
           {{group.name}} @ {{group.homebase}}
         </a>
       </ion-toggle>
       <ion-item class="item item-icon-left" ng-repeat="group in groups" ng-show="!isAuthenticated()" style="cursor:pointer">
-        <i class="icon ion-ios-information-outline positive" ng-click="groupInfo(group)"></i>
+        <i class="icon ion-ios-information-empty positive" ng-click="groupInfo(group)">
+          <span class="badge icon-badge">{{group.nMembers}}</span>
+        </i>
         <a ng-click="goToGroup(group)" style="color:blue">
           {{group.name}} @ {{group.homebase}}
         </a>
