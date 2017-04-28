@@ -2,11 +2,14 @@
   <ion-nav-title>פעילות</ion-nav-title>
   <ion-content class="has-tabs" padding="true">
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange()">
-      אני משתתף בריצה
+      אני משתתף בפעילות
     </ion-toggle>
     <ion-list>
       <ion-item>
         מתי: {{session.datetimeStr}}
+      </ion-item>
+      <ion-item>
+        סוג: {{session.type}}
       </ion-item>
       <ion-item>
         מיקום: {{session.location}}

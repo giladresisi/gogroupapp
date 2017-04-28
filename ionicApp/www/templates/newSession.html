@@ -13,13 +13,16 @@
             <i class="icon ion-ios-calendar positive"></i>
             <strong>{{newSession.datetime| date: "yyyy-MM-dd H:mm"}}</strong>
         </div>
+        <label class="item item-input item-select">
+          <div class="input-label" style="visibility:hidden">סוג פעילות</div>
+          <select ng-model="newSession.type">
+            <option ng-repeat="type in activityTypes">{{type}}</option>
+          </select>
+        </label>
         <label class="item item-input">
-          <span class="input-label">מיקום</span>
-          <input type="text" ng-model="newSession.location">
+          <input type="text" placeholder="מיקום" ng-model="newSession.location">
         </label>
-        <label class="item">
-          <button class="button button-block button-positive" type="submit">צור פעילות</button>
-        </label>
+        <button class="button button-block button-positive" type="submit">צור פעילות</button>
       </div>
     </form>
   </ion-content>

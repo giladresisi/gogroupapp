@@ -19,7 +19,7 @@
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
         <a ng-click="goToSession(session)">
-          {{session.datetimeStr}}, {{session.location}}
+          {{session.datetimeStr}}, {{session.type}}
         </a>
       </ion-toggle>
   	  <ion-item class="item item-icon-left" ng-repeat="session in group.sessions" ng-show="!group.isMember" style="cursor:pointer">
@@ -27,7 +27,7 @@
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
         <a ng-click="goToSession(session)" style="color:blue">
-          {{session.datetimeStr}}, {{session.location}}
+          {{session.datetimeStr}}, {{session.type}}
         </a>
       </ion-item>
   	</ion-list>

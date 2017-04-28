@@ -14,7 +14,7 @@
           <span class="badge icon-badge">{{group.nMembers}}</span>
         </i>
         <a ng-click="goToGroup(group)">
-          {{group.name}} @ {{group.homebase}}
+          {{group.name}}, {{group.type}}
         </a>
       </ion-toggle>
       <ion-item class="item item-icon-left" ng-repeat="group in groups" ng-show="!isAuthenticated()" style="cursor:pointer">
@@ -22,7 +22,7 @@
           <span class="badge icon-badge">{{group.nMembers}}</span>
         </i>
         <a ng-click="goToGroup(group)" style="color:blue">
-          {{group.name}} @ {{group.homebase}}
+          {{group.name}}, {{group.type}}
         </a>
       </ion-item>
     </ion-list>

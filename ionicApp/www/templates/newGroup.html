@@ -12,6 +12,12 @@
           <span class="input-label">שם הקבוצה</span>
           <input type="text" ng-model="newGroup.name">
         </label>
+        <label class="item item-input item-select">
+          <div class="input-label" style="visibility:hidden">סוג פעילות קבוע</div>
+          <select ng-model="newGroup.type">
+            <option ng-repeat="type in activityTypes">{{type}}</option>
+          </select>
+        </label>
         <label class="item item-input">
           <span class="input-label">מקום מפגש קבוע</span>
           <input type="text" ng-model="newGroup.homebase">

@@ -1431,39 +1431,6 @@ app.get('/user/groups/sessions', ensureAuthenticated, function(req,res) {
                       } else {
                         res.send(arrays);
                       }
-                      // sessionArr.forEach(function(session, index, arr) {
-                      //   var g = groupArr.find(function(group) {
-                      //     return (group._id.toString() == session.groupId.toString());
-                      //   });
-                      //   if (g != undefined) {
-                      //     arr[index].groupName = g.name;
-                      //   }
-                      //   arr[index].unseen = false;
-                      //   if (user.unseen.some(function(sessionId) {
-                      //     return (sessionId.toString() == session._id.toString());
-                      //   })) {
-                      //     arr[index].unseen = true;
-                      //   }
-                      //   arr[index].isParticipant = false;
-                      //   if (session.users.some(function(userId) {
-                      //     return user._id.toString() == userId.toString();
-                      //   })) {
-                      //     arr[index].isParticipant = true;
-                      //   }
-                      //   arr[index].nParticipants = session.users.length;
-                      //   delete arr[index].users;
-                      // });
-                      // users.updateOne({"_id": new ObjectId(user._id.toString())}, {$set:{
-                      //   unseen: []
-                      // }}, function(err) {
-                      //   if (err != null) {
-                      //     console.log('get(/user/groups/sessions) error: collection.updateOne()');
-                      //     return res.status(500).send({ message: err.message });
-                      //   } else {
-                      //     console.log('get(/user/groups/sessions) success: sessionArr = ' + JSON.stringify(sessionArr));
-                      //     res.send(sessionArr);
-                      //   }
-                      // });
                     });
                   });
                 });
@@ -1779,6 +1746,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
             }
             var group = {
               name: req.body.name,
+              type: req.body.type,
               homebase: req.body.homebase,
               users: [ user._id.toString() ],
               sessions: []
@@ -2299,6 +2267,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
             return res.status(500).send({message: err.message });
           }
           var session = {
+            type: req.body.type,
             location: req.body.location,
             datetimeMS: req.body.datetimeMS,
             users: [ user._id.toString() ]
