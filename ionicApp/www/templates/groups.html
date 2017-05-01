@@ -7,6 +7,9 @@
     <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">
       הצג רק קבוצות בהן אני חבר
     </ion-checkbox>
+    <ion-item ng-show="!isAuthenticated()" class="item item-icon-left" style="background-color:#F0F8FF">
+      התחבר כדי להצטרף / ליצור קבוצה
+    </ion-item>
     <ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="group in groups" ng-show="isAuthenticated() && (!showMineOnly || group.isMember)"
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)">

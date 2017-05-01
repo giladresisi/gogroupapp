@@ -7,6 +7,9 @@
     <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">
       הצג רק פעילויות בהשתתפותי
     </ion-checkbox>
+    <ion-item ng-show="!isAuthenticated()" class="item item-icon-left" style="background-color:#F0F8FF">
+      התחבר כדי להצטרף / ליצור פעילות
+    </ion-item>
     <ion-list>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in sessions" ng-show="isAuthenticated() && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)">

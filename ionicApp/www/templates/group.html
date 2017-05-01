@@ -6,6 +6,10 @@
       <i class="icon ion-ios-information-outline positive" ng-click="showGroupInfo()" style="cursor:pointer"></i>
       אני חבר בקבוצה
     </ion-toggle>
+    <ion-item ng-show="!isAuthenticated()" class="item item-icon-left" style="background-color:#F0F8FF">
+      <i class="icon ion-ios-information-outline positive" ng-click="showGroupInfo()" style="cursor:pointer"></i>
+      התחבר כדי להצטרף לקבוצה ולפעילויות
+    </ion-item>
     <button ng-show="(group.isMember && isAuthenticated())" class="button button-block button-positive" ng-click="showNewSessionModal()">
       צור פעילות קבוצתית חדשה
   	</button>
