@@ -1411,11 +1411,12 @@ app.get('/user/groups/sessions', ensureAuthenticated, function(req,res) {
                           }
                           arr[index].nParticipants = session.users.length;
                           delete arr[index].users;
+                          arr[index].unseen = false;
                           if (user.unseen.some(function(sessionId) {
                             return (sessionId.toString() == session._id.toString());
                           })) {
                             arrays.unseen.push(arr[index]);
-                            arr.splice(index, 1);
+                            arr[index].unseen = true;
                           }
                         });
                         users.updateOne({"_id": new ObjectId(user._id.toString())}, {$set:{

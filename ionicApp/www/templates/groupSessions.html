@@ -20,7 +20,7 @@
       <div class="item item-divider">
         פעילויות קבוצתיות שכבר ראיתי
       </div>
-      <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in seen" ng-show="(!showMineOnly || session.isParticipant)"
+      <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in seen" ng-show="((!showMineOnly || session.isParticipant) && (!session.unseen))"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
         <i class="icon ion-ios-information-empty positive" ng-click="sessionInfo(session)">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
