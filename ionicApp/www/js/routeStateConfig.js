@@ -20,20 +20,6 @@ app
         }
       }
     })
-    .state('app.session', {
-      cache: false,
-      url: '/session/:sessionId',
-      views: {
-        'menuContent': {
-          templateUrl: 'templates/session.html',
-          controller: 'SessionCtrl'
-        }
-      },
-      params: {
-        sessionId: null,
-        session: null
-      }
-    })
     .state('app.groups', {
       cache: false,
       url: '/groups',

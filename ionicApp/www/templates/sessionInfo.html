@@ -1,0 +1,32 @@
+<ion-modal-view>
+  <ion-header-bar>
+    <h1 class="title">מידע על פעילות</h1>
+    <div class="buttons">
+      <button class="button button-positive" ng-click="closeSessionInfo()">סגור</button>
+    </div>
+  </ion-header-bar>
+  <ion-content class="has-tabs" padding="true">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="selectedSession.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(selectedSession)">
+      אני משתתף בפעילות
+    </ion-toggle>
+    <ion-list>
+      <ion-item>
+        מתי: {{selectedSession.datetimeStr}}
+      </ion-item>
+      <ion-item>
+        סוג: {{selectedSession.type}}
+      </ion-item>
+      <ion-item>
+        מיקום: {{selectedSession.location}}
+      </ion-item>
+      <ion-item>
+        משתתפים: {{selectedSession.nParticipants}}
+      </ion-item>
+      <ion-item ng-show="selectedSession.groupId" style="cursor:pointer">
+        <a ng-click="goToGroup(selectedSession.groupId)" style="color:blue">
+          קבוצה: {{selectedSession.groupName}}
+        </a>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-modal-view>

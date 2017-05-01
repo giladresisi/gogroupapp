@@ -1,0 +1,30 @@
+<ion-modal-view>
+  <ion-header-bar>
+    <h1 class="title">מידע על קבוצה</h1>
+    <div class="buttons">
+      <button class="button button-positive" ng-click="closeGroupInfo()">סגור</button>
+    </div>
+  </ion-header-bar>
+  <ion-content class="has-tabs" padding="true">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)">
+      אני חבר בקבוצה
+    </ion-toggle>
+    <ion-list>
+      <ion-item>
+        שם הקבוצה: {{group.name}}
+      </ion-item>
+      <ion-item>
+        סוג פעילות קבוע: {{group.type}}
+      </ion-item>
+      <ion-item>
+        מקום פעילות קבוע: {{group.homebase}}
+      </ion-item>
+      <ion-item>
+        חברים: {{group.nMembers}}
+      </ion-item>
+      <button ng-click="goToGroup(group)" class="button button-block button-positive">
+        הצג פעילויות קרובות
+      </button>
+    </ion-list>
+  </ion-content>
+</ion-modal-view>

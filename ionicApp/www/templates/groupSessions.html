@@ -9,25 +9,21 @@
         פעילויות קבוצתיות שעוד לא ראיתי
       </div>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in unseen" ng-show="(!showMineOnly || session.isParticipant)"
-        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
-        <i class="icon ion-ios-information-empty positive" ng-click="sessionInfo(session)">
+        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)">
+        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <a ng-click="goToSession(session)">
-          {{session.datetimeStr}}, {{session.type}}
-        </a>
+        {{session.datetimeStr}}, {{session.type}}
       </ion-toggle>
       <div class="item item-divider">
         פעילויות קבוצתיות שכבר ראיתי
       </div>
       <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in seen" ng-show="((!showMineOnly || session.isParticipant) && (!session.unseen))"
-        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" style="cursor:pointer">
-        <i class="icon ion-ios-information-empty positive" ng-click="sessionInfo(session)">
+        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)">
+        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)"  style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <a ng-click="goToSession(session)">
-          {{session.datetimeStr}}, {{session.type}}
-        </a>
+        {{session.datetimeStr}}, {{session.type}}
       </ion-toggle>
     </ion-list>
   </ion-content>
