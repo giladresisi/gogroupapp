@@ -1351,9 +1351,13 @@ app.get('/user/groups/sessions', ensureAuthenticated, function(req,res) {
             console.log('get(/user/groups/sessions) error: User Not Found');
             return res.status(400).send({ message: 'User Not Found' });
           } else {
+            var arrays = {
+              unseen: [],
+              seen: []
+            }
             if (user.groups.length == 0) {
               console.log('get(/user/groups/sessions) success: 0 group memberships');
-              res.send([]);
+              res.send(arrays);
             } else {
               var groupIDs = [];
               user.groups.forEach(function(groupId, index) {
@@ -1390,10 +1394,7 @@ app.get('/user/groups/sessions', ensureAuthenticated, function(req,res) {
                       sessionArr.sort(function(s1, s2) {
                         return s1.datetimeMS - s2.datetimeMS;
                       });
-                      var arrays = {
-                        unseen: [],
-                        seen: sessionArr
-                      }
+                      arrays.seen = sessionArr;
                       if (arrays.seen.length > 0) {
                         arrays.seen.forEach(function(session, index, arr) {
                           var g = groupArr.find(function(group) {

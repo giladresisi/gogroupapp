@@ -9,7 +9,7 @@
     <form ng-submit="createNewSession()">
       <div class="list">
         <div class="item item-icon-left" ion-datetime-picker minute-step="15" style="cursor:pointer; color:blue"
-          only-valid="{'after': 'today', 'inclusive': true}" ng-model="newSession.datetime">
+          only-valid="{'after': 'today', 'inclusive': true}" ng-model="newSession.datetime" dir="ltr">
             <i class="icon ion-ios-calendar positive"></i>
             <strong>{{newSession.datetime| date: "yyyy-MM-dd H:mm"}}</strong>
         </div>

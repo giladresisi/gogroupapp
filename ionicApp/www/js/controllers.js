@@ -299,6 +299,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.groups = [];
   $scope.showMineOnly = false;
   $scope.activityTypes = ACTIVITY_TYPES;
+  $scope.activityTypes[0] = '<בחר סוג פעילות קבוע>'
 
   $ionicModal.fromTemplateUrl('templates/newGroup.html', {
     scope: $scope
