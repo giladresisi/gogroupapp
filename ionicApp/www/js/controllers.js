@@ -49,6 +49,8 @@ angular.module('controllers', ['ion-datetime-picker'])
     $auth.logout();
     if ($state.is('app.gs')) {
       $state.go('app.sessions');
+    } else {
+      $state.reload();
     }
   };
 
