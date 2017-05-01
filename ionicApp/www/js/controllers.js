@@ -103,7 +103,8 @@ angular.module('controllers', ['ion-datetime-picker'])
             $scope.user = response.data;
           })
           .catch(function(err) {
-            console.log('Error get(/user/basic): ' + JSON.stringify(err));
+            console.log('Error get(/user/basic): ' + JSON.stringify(err) + ', logging out...');
+            $scope.logout();
           });
       }
     }
