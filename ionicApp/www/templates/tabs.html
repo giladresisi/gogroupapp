@@ -2,8 +2,11 @@
   <ion-nav-back-button>
   </ion-nav-back-button>
   <ion-nav-buttons side="left">
-    <button ng-show="!isAuthenticated()" class="button button-small" ng-click="login()">התחבר</button>
-    <button ng-show="isAuthenticated()" class="button button-small" ng-click="logout()">התנתק</button>
+   <!--  <button ng-show="!isAuthenticated()" class="button button-small" ng-click="login()">התחבר</button>
+    <button ng-show="isAuthenticated()" class="button button-small" ng-click="logout()">התנתק</button> -->
+    <button ng-click="userPopover.show($event)">
+      {{user.firstName}}▼
+    </button>
   </ion-nav-buttons>
 </ion-nav-bar>
 <ion-nav-view name="menuContent"></ion-nav-view>

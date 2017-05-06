@@ -13,6 +13,22 @@ a{
 	top: 3px;
 	right: 10px;
 	font-size: 12px;
-	background-color: transparent;
 	color: #f00;
+}
+
+ion-popover-view.fit {
+  height: auto;
+}
+
+ion-popover-view.fit ion-content {
+  position: relative;
+}
+
+.platform-android ion-popover-view.fit {
+  margin-top: 10px;
+}
+
+.platform-ios ion-popover-view.fit {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }

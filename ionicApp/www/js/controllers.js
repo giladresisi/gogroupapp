@@ -1,13 +1,17 @@
 angular.module('controllers', ['ion-datetime-picker'])
 
-.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, $ionicNavBarDelegate, BACKEND_URL) {
+.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, $ionicNavBarDelegate, $ionicPopover, BACKEND_URL) {
 
-  $scope.loginData = {};
-  $scope.signupData = {};
   $scope.user = {
-    displayName: 'Visitor',
+    firstName: 'אורח',
     nUnseen: 0
   }
+
+  $ionicPopover.fromTemplateUrl('templates/userMenu.html', {
+    scope: $scope,
+  }).then(function(popover) {
+    $scope.userPopover = popover;
+  });
 
   $ionicModal.fromTemplateUrl('templates/login.html', {
     scope: $scope
@@ -22,17 +26,26 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.closeLogin = function() {
-    $scope.loginModal.hide();
+    $scope.loginModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.closeSignup = function() {
-    $scope.signupModal.hide();
+    $scope.signupModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.loginToSignup = function() {
     $scope.closeLogin();
     $scope.signupData = {};
-    $scope.signupModal.show();
+    $scope.signupModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.signupToLogin = function() {
@@ -42,16 +55,25 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.login = function() {
     $scope.loginData = {};
-    $scope.loginModal.show();
+    $scope.userPopover.hide()
+      .then(function() {
+        $scope.loginModal.show()
+          .then(function() {
+            return;
+          });
+      });
   };
 
   $scope.logout = function() {
     $auth.logout();
-    if ($state.is('app.gs')) {
-      $state.go('app.sessions');
-    } else {
-      $state.reload();
-    }
+    $scope.userPopover.hide()
+      .then(function() {
+        if ($state.is('app.gs')) {
+          $state.go('app.sessions');
+        } else {
+          $state.reload();
+        }
+      });
   };
 
   // Perform the signup action when the user submits the signup form
@@ -103,11 +125,14 @@ angular.module('controllers', ['ion-datetime-picker'])
         $http.get(BACKEND_URL + 'user/basic')
           .then(function(response) {
             $scope.user = response.data;
+            $scope.user.firstName = $scope.user.displayName.substring(0, $scope.user.displayName.indexOf(" "));
           })
           .catch(function(err) {
             console.log('Error get(/user/basic): ' + JSON.stringify(err) + ', logging out...');
             $scope.logout();
           });
+      } else {
+        $scope.user.firstName = 'אורח';
       }
     }
   };
