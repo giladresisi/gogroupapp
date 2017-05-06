@@ -55052,7 +55052,7 @@ IonicModule
     },
 
     navBar: {
-      alignTitle: 'right',
+      alignTitle: 'left',
       positionPrimaryButtons: 'right',
       positionSecondaryButtons: 'right'
     },
@@ -59142,7 +59142,7 @@ function($scope, $element, $attrs, $compile, $timeout, $ionicNavBarDelegate, $io
   var PRIMARY_BUTTONS = 'primaryButtons';
   var SECONDARY_BUTTONS = 'secondaryButtons';
   var BACK_BUTTON = 'backButton';
-  var ITEM_TYPES = 'primaryButtons secondaryButtons rightButtons title leftButtons'.split(' ');
+  var ITEM_TYPES = 'primaryButtons secondaryButtons leftButtons rightButtons title'.split(' ');
 
   var self = this;
   var headerBars = [];
