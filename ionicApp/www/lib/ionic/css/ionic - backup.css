@@ -8036,7 +8036,7 @@ input:checked + .checkbox-icon:after {
   opacity: 1; }
 
 .item-checkbox {
-  padding-right: 60px; }
+  padding-left: 60px; }
   .item-checkbox.active {
     box-shadow: none; }
 
@@ -8171,7 +8171,7 @@ input:checked + .checkbox-icon:after {
 
 .item-toggle,
 .item-toggle.item-complex .item-content {
-  padding-right: 75px; }
+  padding-right: 99px; }
 
 .item-toggle.item-complex {
   padding-right: 0; }

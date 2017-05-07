@@ -55006,7 +55006,7 @@ IonicModule
 
     backButton: {
       icon: 'ion-ios-arrow-back',
-      text: 'חזור',
+      text: 'Back',
       previousTitleText: true
     },
 
@@ -55052,6 +55052,7 @@ IonicModule
     },
 
     navBar: {
+      alignTitle: 'left',
       positionPrimaryButtons: 'right',
       positionSecondaryButtons: 'right'
     },
@@ -55063,7 +55064,7 @@ IonicModule
     },
 
     form: {
-      checkbox: 'circle',
+      checkbox: 'square',
       toggle: 'small'
     },
 
