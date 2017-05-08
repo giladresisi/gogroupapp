@@ -159,7 +159,10 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.closeNewSessionModal = function() {
-    $scope.newSessionModal.hide();
+    $scope.newSessionModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.showNewSessionModal = function() {
@@ -169,7 +172,10 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.type = $scope.group.type;
     $scope.newSession.location = $scope.group.homebase;
-    $scope.newSessionModal.show();
+    $scope.newSessionModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.createNewSession = function() {
@@ -215,7 +221,20 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.closeNewSessionModal();
-        $state.go('app.session', {sessionId: response.data._id, session: response.data});
+        var s = response.data;
+        s.datetime = new Date(s.datetimeMS);
+        s.datetimeStr = $filter('date')(s.datetime, "dd.MM, H:mm");
+        $scope.group.nUpcoming += 1;
+        var i = $scope.group.sessions.findIndex(function(session) {
+          return (session.datetimeMS > s.datetimeMS);
+        });
+        if (i != -1) {
+          $scope.group.sessions.splice(i, 0, s);
+          $scope.showSessionInfo($scope.group.sessions[i]);
+        } else {
+          $scope.group.sessions.push(s);
+          $scope.showSessionInfo($scope.group.sessions[$scope.group.sessions.length - 1]);
+        }
       });
   };
 
@@ -229,11 +248,17 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.selectedSession = session;
     $scope.selectedSession.groupId = $scope.groupId;
     $scope.selectedSession.groupName = $scope.group.name;
-    $scope.sessionInfoModal.show();
+    $scope.sessionInfoModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.closeSessionInfo = function() {
-    $scope.sessionInfoModal.hide();
+    $scope.sessionInfoModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.goToGroup = function(groupId) {
@@ -288,11 +313,17 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.showGroupInfo = function(group) {
-    $scope.groupInfoModal.show();
+    $scope.groupInfoModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.closeGroupInfo = function() {
-    $scope.groupInfoModal.hide();
+    $scope.groupInfoModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.groupId = $stateParams.groupId;
@@ -347,7 +378,10 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.closeNewGroupModal = function() {
-    $scope.newGroupModal.hide();
+    $scope.newGroupModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.showNewGroupModal = function() {
@@ -355,7 +389,10 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.newGroup.name = '';
     $scope.newGroup.type = $scope.activityTypes[0];
     $scope.newGroup.homebase = '';
-    $scope.newGroupModal.show();
+    $scope.newGroupModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.createNewGroup = function() {
@@ -391,8 +428,8 @@ angular.module('controllers', ['ion-datetime-picker'])
       method: 'POST'
     })
       .then(function(response) {
-        $state.go('app.group', {groupId: response.data._id, group: response.data});
         $scope.closeNewGroupModal();
+        $state.go('app.group', {groupId: response.data._id, group: response.data});
       });
   };
 
@@ -408,11 +445,17 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.showGroupInfo = function(group) {
     $scope.group = group;
-    $scope.groupInfoModal.show();
+    $scope.groupInfoModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.closeGroupInfo = function() {
-    $scope.groupInfoModal.hide();
+    $scope.groupInfoModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.goToGroup = function(group) {
@@ -466,7 +509,10 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   // Triggered in the login modal to close it
   $scope.closeNewSessionModal = function() {
-    $scope.newSessionModal.hide();
+    $scope.newSessionModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   // Open the login modal
@@ -477,7 +523,10 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.type = $scope.activityTypes[0];
     $scope.newSession.location = '';
-    $scope.newSessionModal.show();
+    $scope.newSessionModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   // Perform the login action when the user submits the login form
@@ -523,7 +572,19 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.closeNewSessionModal();
-        $state.go('app.session', {sessionId: response.data._id, session: response.data});
+        var s = response.data;
+        s.datetime = new Date(s.datetimeMS);
+        s.datetimeStr = $filter('date')(s.datetime, "dd.MM, H:mm");
+        var i = $scope.sessions.findIndex(function(session) {
+          return (session.datetimeMS > s.datetimeMS);
+        });
+        if (i != -1) {
+          $scope.sessions.splice(i, 0, s);
+          $scope.showSessionInfo($scope.sessions[i]);
+        } else {
+          $scope.sessions.push(s);
+          $scope.showSessionInfo($scope.sessions[$scope.sessions.length - 1]);
+        }
       });
   };
 
@@ -557,16 +618,22 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.showSessionInfo = function(session) {
     $scope.selectedSession = session;
-    $scope.sessionInfoModal.show();
+    $scope.sessionInfoModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.closeSessionInfo = function() {
-    $scope.sessionInfoModal.hide();
+    $scope.sessionInfoModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.goToGroup = function(groupId) {
-    $state.go('app.group', {groupId: groupId});
     $scope.closeSessionInfo();
+    $state.go('app.group', {groupId: groupId});
   };
 
   var endPoint = BACKEND_URL + 'session/all';
@@ -621,11 +688,17 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.showSessionInfo = function(session) {
     $scope.selectedSession = session;
-    $scope.sessionInfoModal.show();
+    $scope.sessionInfoModal.show()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.closeSessionInfo = function() {
-    $scope.sessionInfoModal.hide();
+    $scope.sessionInfoModal.hide()
+      .then(function() {
+        return;
+      });
   };
 
   $scope.goToGroup = function(groupId) {
