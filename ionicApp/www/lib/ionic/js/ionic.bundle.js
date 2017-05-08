@@ -55006,7 +55006,7 @@ IonicModule
 
     backButton: {
       icon: 'ion-ios-arrow-back',
-      text: 'חזור',
+      text: 'Back',
       previousTitleText: true
     },
 
@@ -55052,6 +55052,7 @@ IonicModule
     },
 
     navBar: {
+      alignTitle: 'left',
       positionPrimaryButtons: 'right',
       positionSecondaryButtons: 'right'
     },
@@ -55063,7 +55064,7 @@ IonicModule
     },
 
     form: {
-      checkbox: 'circle',
+      checkbox: 'square',
       toggle: 'small'
     },
 
@@ -59302,11 +59303,11 @@ function($scope, $element, $attrs, $compile, $timeout, $ionicNavBarDelegate, $io
         // left side
         if (!leftButtonsEle) {
           leftButtonsEle = jqLite('<div class="buttons buttons-left">');
-          // if (navEle[BACK_BUTTON]) {
-          //   navEle[BACK_BUTTON].after(leftButtonsEle);
-          // } else {
-            headerBarEle.append(leftButtonsEle);
-          // }
+          if (navEle[BACK_BUTTON]) {
+            navEle[BACK_BUTTON].after(leftButtonsEle);
+          } else {
+            headerBarEle.prepend(leftButtonsEle);
+          }
         }
         if (itemType == SECONDARY_BUTTONS) {
           leftButtonsEle.append(ele);
