@@ -6,7 +6,7 @@
     </div>
   </ion-header-bar>
   <ion-content class="has-tabs" padding="true" dir="rtl">
-	  <ion-toggle ng-show="isAuthenticated()" ng-model="selectedSession.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(selectedSession)">
+	  <ion-toggle ng-if="isAuthenticated()" ng-model="selectedSession.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(selectedSession)">
       אני משתתף בפעילות
     </ion-toggle>
     <ion-list>
@@ -22,7 +22,7 @@
       <ion-item>
         משתתפים: {{selectedSession.nParticipants}}
       </ion-item>
-      <ion-item ng-show="selectedSession.groupId" style="cursor:pointer">
+      <ion-item ng-if="selectedSession.groupId" style="cursor:pointer">
         <a ng-click="goToGroup(selectedSession.groupId)" style="color:blue">
           קבוצה: {{selectedSession.groupName}}
         </a>

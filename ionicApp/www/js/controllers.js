@@ -141,6 +141,12 @@ angular.module('controllers', ['ion-datetime-picker'])
     $ionicNavBarDelegate.showBar(true);
   });
 
+  $scope.$on('$stateChangeStart', function() {
+    $scope.userPopover.hide();
+    $scope.loginModal.hide();
+    $scope.signupModal.hide();
+  });
+
   $scope.$on('$stateChangeSuccess', $scope.onStateChangeSuccess);
 })
 
@@ -326,6 +332,12 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
   };
 
+  $scope.$on('$stateChangeStart', function() {
+    $scope.groupInfoModal.hide();
+    $scope.sessionInfoModal.hide();
+    $scope.newSessionModal.hide();
+  });
+
   $scope.groupId = $stateParams.groupId;
 
   if ($scope.groupId == null) {
@@ -480,6 +492,11 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
     }
   }
+
+  $scope.$on('$stateChangeStart', function() {
+    $scope.newGroupModal.hide();
+    $scope.groupInfoModal.hide();
+  });
 
   var endPoint = BACKEND_URL + 'group/all';
 
@@ -636,6 +653,11 @@ angular.module('controllers', ['ion-datetime-picker'])
     $state.go('app.group', {groupId: groupId});
   };
 
+  $scope.$on('$stateChangeStart', function() {
+    $scope.newSessionModal.hide();
+    $scope.sessionInfoModal.hide();
+  });
+
   var endPoint = BACKEND_URL + 'session/all';
 
   if ($scope.isAuthenticated()) {
@@ -705,6 +727,10 @@ angular.module('controllers', ['ion-datetime-picker'])
     $state.go('app.group', {groupId: groupId});
     $scope.closeSessionInfo();
   }
+
+  $scope.$on('$stateChangeStart', function() {
+    $scope.sessionInfoModal.hide();
+  });
 
   $http.get(BACKEND_URL + 'user/groups/sessions')
     .then(function(response) {
