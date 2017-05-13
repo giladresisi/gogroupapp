@@ -1545,7 +1545,7 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
                   arr[index].isMember = true;
                 }
                 delete arr[index].users;
-                arr[index].Upcoming = 0;
+                arr[index].nUpcoming = 0;
                 if (group.sessions.length == 0) {
                   nGroupsDone += 1;
                   if (nGroupsDone == arr.length) {
