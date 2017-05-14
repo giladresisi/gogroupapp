@@ -1472,7 +1472,7 @@ app.get('/group/all', function(req, res) {
           groupArr.forEach(function(group, index, arr) {
             arr[index].nMembers = group.users.length;
             delete arr[index].users;
-            arr[index].Upcoming = 0;
+            arr[index].nUpcoming = 0;
             if (group.sessions.length == 0) {
               nGroupsDone += 1;
               if (nGroupsDone == arr.length) {
@@ -2082,29 +2082,44 @@ app.get('/session/single', function(req, res) {
           return res.status(500).send({message: err.message });
         }
         session.nParticipants = session.users.length;
-        delete session.users;
-        if (session.groupId != null) {
-          db.collection('groups', function(err, groups) {
+        var userIDs = session.users.map(function(userId) {
+          return new ObjectId(userId);
+        });
+        db.collection('users', function(err, users) {
+          if (err != null) {
+            console.log('get(/session/single/user) error: db.collection(users)');
+            return res.status(500).send({message: err.message });
+          }
+          users.find({ _id: { $in: userIDs } }, { fields: { displayName: 1, _id: 1 } }).toArray(function(err, userArr) {
             if (err != null) {
-              console.log('get(/session/single) error: db.collection(groups)');
+              console.log('get(/session/single/user) error: collection.find(session.users)');
               return res.status(500).send({message: err.message });
             }
-            groups.findOne({"_id": new ObjectId(session.groupId.toString())}, function(err, group) {
-              if (err != null) {
-                console.log('get(/session/single) error: collection.findOne(groupId)');
-                return res.status(500).send({message: err.message });
-              }
-              if (!group) {
-                console.log('get(/session/single) error: No such group');
-                return res.status(409).send({ message: 'No such group' });
-              }
-              session.groupName = group.name;
+            session.participants = userArr;
+            if (session.groupId != null) {
+              db.collection('groups', function(err, groups) {
+                if (err != null) {
+                  console.log('get(/session/single) error: db.collection(groups)');
+                  return res.status(500).send({message: err.message });
+                }
+                groups.findOne({"_id": new ObjectId(session.groupId.toString())}, function(err, group) {
+                  if (err != null) {
+                    console.log('get(/session/single) error: collection.findOne(groupId)');
+                    return res.status(500).send({message: err.message });
+                  }
+                  if (!group) {
+                    console.log('get(/session/single) error: No such group');
+                    return res.status(409).send({ message: 'No such group' });
+                  }
+                  session.groupName = group.name;
+                  res.send(session);
+                });
+              });
+            } else {
               res.send(session);
-            });
+            }
           });
-        } else {
-          res.send(session);
-        }
+        });
       });
     });
   });
@@ -2138,35 +2153,44 @@ app.get('/session/single/user', ensureAuthenticated, function(req, res) {
               return res.status(500).send({message: err.message });
             }
             session.nParticipants = session.users.length;
-            delete session.users;
             session.isParticipant = false;
             if (user.sessions.some(function(sessionId) {
               return sessionId.toString() == session._id.toString();
             })) {
               session.isParticipant = true;
             }
-            if (session.groupId != null) {
-              db.collection('groups', function(err, groups) {
-                if (err != null) {
-                  console.log('get(/session/single/user) error: db.collection(groups)');
-                  return res.status(500).send({message: err.message });
-                }
-                groups.findOne({"_id": new ObjectId(session.groupId.toString())}, function(err, group) {
+            var userIDs = session.users.map(function(userId) {
+              return new ObjectId(userId);
+            });
+            users.find({ _id: { $in: userIDs } }, { fields: { displayName: 1, _id: 1 } }).toArray(function(err, userArr) {
+              if (err != null) {
+                console.log('get(/session/single/user) error: collection.find(session.users)');
+                return res.status(500).send({message: err.message });
+              }
+              session.participants = userArr;
+              if (session.groupId != null) {
+                db.collection('groups', function(err, groups) {
                   if (err != null) {
-                    console.log('get(/session/single/user) error: collection.findOne(groupId)');
+                    console.log('get(/session/single/user) error: db.collection(groups)');
                     return res.status(500).send({message: err.message });
                   }
-                  if (!group) {
-                    console.log('get(/session/single/user) error: No such group');
-                    return res.status(409).send({ message: 'No such group' });
-                  }
-                  session.groupName = group.name;
-                  res.send(session);
+                  groups.findOne({"_id": new ObjectId(session.groupId.toString())}, function(err, group) {
+                    if (err != null) {
+                      console.log('get(/session/single/user) error: collection.findOne(groupId)');
+                      return res.status(500).send({message: err.message });
+                    }
+                    if (!group) {
+                      console.log('get(/session/single/user) error: No such group');
+                      return res.status(409).send({ message: 'No such group' });
+                    }
+                    session.groupName = group.name;
+                    res.send(session);
+                  });
                 });
-              });
-            } else {
-              res.send(session);
-            }
+              } else {
+                res.send(session);
+              }
+            });
           });
         });
       });
@@ -2402,7 +2426,7 @@ app.post('/session/join', ensureAuthenticated, function(req, res) {
                   return res.status(500).send({ message: err.message });
                 }
                 console.log('post(/session/join) success: session = ' + JSON.stringify(session));
-                return res.status(200).send(session._id.toString());
+                return res.status(200).send(user);
               });
             });
           });

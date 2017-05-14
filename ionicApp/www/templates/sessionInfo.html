@@ -19,8 +19,15 @@
       <ion-item>
         מיקום: {{selectedSession.location}}
       </ion-item>
-      <ion-item>
-        משתתפים: {{selectedSession.nParticipants}}
+      <ion-item ng-if="selectedSession.nParticipants > 0" style="cursor:pointer">
+        <a ng-click="showSessionParticipants()" style="color:blue">
+          משתתפים: {{selectedSession.nParticipants}}
+        </a>
+      </ion-item>
+      <ion-item ng-if="selectedSession.nParticipants == 0" style="cursor:pointer">
+        <p>
+          משתתפים: {{selectedSession.nParticipants}}
+        </p>
       </ion-item>
       <ion-item ng-if="selectedSession.groupId" style="cursor:pointer">
         <a ng-click="goToGroup(selectedSession.groupId)" style="color:blue">
