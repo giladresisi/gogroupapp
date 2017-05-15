@@ -1447,6 +1447,45 @@ app.get('/user/groups/sessions', ensureAuthenticated, function(req,res) {
 
 /*
  |--------------------------------------------------------------------------
+ | GET /group/members - Get names of members of a single group
+ |--------------------------------------------------------------------------
+ */
+app.get('/group/members', function(req, res) {
+  MongoPool.getInstance(function (db) {
+    db.collection('groups', function(err, groups) {
+      if (err != null) {
+        console.log('get(/group/all) error: db.collection()');
+        return res.status(500).send({message: err.message });
+      }
+      groups.findOne({"_id": new ObjectId(req.query.groupId)}, function(err, group) {
+        if (err != null) {
+          console.log('get(/group/single) error: collection.findOne()');
+          return res.status(500).send({message: err.message });
+        }
+        var userIDs = group.users.map(function(userId) {
+          return new ObjectId(userId);
+        });
+        db.collection('users', function(err, users) {
+          if (err != null) {
+            console.log('get(/group/single) error: db.collection(users)');
+            return res.status(500).send({message: err.message });
+          }
+          users.find({ _id: { $in: userIDs } }, { fields: { displayName: 1, _id: 1 } }).toArray(function(err, userArr) {
+            if (err != null) {
+              console.log('get(/group/single) error: collection.find(group.users)');
+              return res.status(500).send({message: err.message });
+            }
+            group.members = userArr;
+            res.send(group);
+          });
+        });
+      });
+    });
+  });
+});
+
+/*
+ |--------------------------------------------------------------------------
  | GET /group/all - Get all existing groups
  |--------------------------------------------------------------------------
  */
@@ -1838,7 +1877,7 @@ app.post('/group/join', ensureAuthenticated, function(req, res) {
                   return res.status(500).send({ message: err.message });
                 }
                 console.log('post(/group/join) success: group = ' + JSON.stringify(group));
-                return res.status(200).send(group.name);
+                return res.status(200).send(user);
               });
             });
           });

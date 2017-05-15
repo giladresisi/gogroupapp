@@ -2,7 +2,7 @@
   <ion-nav-title>{{group.name}}</ion-nav-title>
   <ion-content class="has-tabs" padding="true" dir="rtl">
 	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.group.isMember" class="item item-toggle item-icon-left"
-      toggle-class="toggle-calm" ng-change="onMembershipChange()" style="background-color:#F0F8FF">
+      toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="background-color:#F0F8FF">
       <i class="icon ion-ios-information-outline positive" ng-click="showGroupInfo()" style="cursor:pointer"></i>
       אני חבר בקבוצה
     </ion-toggle>

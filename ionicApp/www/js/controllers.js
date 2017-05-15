@@ -251,9 +251,12 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.showSessionInfo = function(session) {
-    $scope.selectedSession = session;
-    $scope.selectedSession.groupId = $scope.groupId;
-    $scope.selectedSession.groupName = $scope.group.name;
+    if (!$scope.selectedSession ||
+        ($scope.selectedSession._id.toString() != session._id.toString())) {
+      $scope.selectedSession = session;
+      $scope.selectedSession.groupId = $scope.groupId;
+      $scope.selectedSession.groupName = $scope.group.name;
+    }
     $scope.sessionInfoModal.show()
       .then(function() {
         return;
@@ -276,21 +279,34 @@ angular.module('controllers', ['ion-datetime-picker'])
     return $auth.isAuthenticated();
   };
 
-  $scope.onMembershipChange = function() {
+  $scope.onMembershipChange = function(group) {
     if ($scope.group.isMember) {
       $scope.group.nMembers += 1;
       $http({
         url: BACKEND_URL + 'group/join',
         data: {groupId: $scope.groupId},
         method: 'POST'
-      });
+      })
+        .then(function(response) {
+          if ($scope.group.members) {
+            $scope.group.members.push(response.data);
+          }
+        });
     } else {
       $scope.group.nMembers -= 1;
       $http({
         url: BACKEND_URL + 'group/leave',
         data: {groupId: $scope.groupId},
         method: 'POST'
-      });
+      })
+        .then(function() {
+          if ($scope.group.members) {
+            $scope.group.members =
+              $scope.group.members.filter(function(member) {
+                return (member._id.toString() != $scope.userId);
+              });
+          }
+        });
     }
   };
 
@@ -347,6 +363,47 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
   };
 
+  $ionicModal.fromTemplateUrl('templates/groupMembers.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.groupMembersModal = modal;
+  });
+
+  $scope.showGroupMembers = function() {
+    $scope.groupInfoModal.hide()
+      .then(function() {
+        $scope.groupMembersModal.show()
+          .then(function() {
+            if (!$scope.group.members) {
+              var endPoint = BACKEND_URL + 'group/members';
+              $http.get(endPoint, {
+                params: {groupId: $scope.group._id.toString()}
+              })
+                .then(function(response) {
+                  $scope.group.members = response.data.members;
+                });
+            }
+          });
+      });
+  };
+
+  $scope.closeGroupMembers = function() {
+    $scope.groupMembersModal.hide()
+      .then(function() {
+        return;
+      });
+  };
+
+  $scope.backToGroupInfo = function() {
+    $scope.groupMembersModal.hide()
+      .then(function() {
+        $scope.groupInfoModal.show()
+          .then(function() {
+            return;
+          });
+      })
+  };
+
   $ionicModal.fromTemplateUrl('templates/sessionParticipants.html', {
     scope: $scope
   }).then(function(modal) {
@@ -358,16 +415,18 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function() {
         $scope.sessionParticipantsModal.show()
           .then(function() {
-            var endPoint = BACKEND_URL + 'session/single';
-            if ($scope.isAuthenticated()) {
-              endPoint += '/user';
+            if (!$scope.selectedSession.participants) {
+              var endPoint = BACKEND_URL + 'session/single';
+              if ($scope.isAuthenticated()) {
+                endPoint += '/user';
+              }
+              $http.get(endPoint, {
+                params: {sessionId: $scope.selectedSession._id.toString()}
+              })
+                .then(function(response) {
+                  $scope.selectedSession.participants = response.data.participants;
+                });
             }
-            $http.get(endPoint, {
-              params: {sessionId: $scope.selectedSession._id.toString()}
-            })
-              .then(function(response) {
-                $scope.selectedSession.participants = response.data.participants;
-              });
           });
       });
   };
@@ -393,6 +452,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.groupInfoModal.hide();
     $scope.sessionInfoModal.hide();
     $scope.newSessionModal.hide();
+    $scope.groupMembersModal.hide();
     $scope.sessionParticipantsModal.hide();
   });
 
@@ -541,20 +601,75 @@ angular.module('controllers', ['ion-datetime-picker'])
         url: BACKEND_URL + 'group/join',
         data: {groupId: group._id},
         method: 'POST'
-      });
+      })
+        .then(function(response) {
+          if ($scope.group.members) {
+            $scope.group.members.push(response.data);
+          }
+        });
     } else {
       group.nMembers -= 1;
       $http({
         url: BACKEND_URL + 'group/leave',
         data: {groupId: group._id},
         method: 'POST'
-      });
+      })
+        .then(function() {
+          if ($scope.group.members) {
+            $scope.group.members =
+              $scope.group.members.filter(function(member) {
+                return (member._id.toString() != $scope.userId);
+              });
+          }
+        });
     }
   }
+
+  $ionicModal.fromTemplateUrl('templates/groupMembers.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.groupMembersModal = modal;
+  });
+
+  $scope.showGroupMembers = function() {
+    $scope.groupInfoModal.hide()
+      .then(function() {
+        $scope.groupMembersModal.show()
+          .then(function() {
+            if (!$scope.group.members) {
+              var endPoint = BACKEND_URL + 'group/members';
+              $http.get(endPoint, {
+                params: {groupId: $scope.group._id.toString()}
+              })
+                .then(function(response) {
+                  $scope.group.members = response.data.members;
+                });
+            }
+          });
+      });
+  };
+
+  $scope.closeGroupMembers = function() {
+    $scope.groupMembersModal.hide()
+      .then(function() {
+        return;
+      });
+  };
+
+  $scope.backToGroupInfo = function() {
+    $scope.groupMembersModal.hide()
+      .then(function() {
+        $scope.groupInfoModal.show()
+          .then(function() {
+            return;
+          });
+      })
+  };
 
   $scope.$on('$stateChangeStart', function() {
     $scope.newGroupModal.hide();
     $scope.groupInfoModal.hide();
+    $scope.groupMembersModal.hide();
   });
 
   var endPoint = BACKEND_URL + 'group/all';
@@ -709,7 +824,10 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.showSessionInfo = function(session) {
-    $scope.selectedSession = session;
+    if (!$scope.selectedSession ||
+        ($scope.selectedSession._id.toString() != session._id.toString())) {
+      $scope.selectedSession = session;
+    }
     $scope.sessionInfoModal.show()
       .then(function() {
         return;
@@ -734,16 +852,18 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function() {
         $scope.sessionParticipantsModal.show()
           .then(function() {
-            var endPoint = BACKEND_URL + 'session/single';
-            if ($scope.isAuthenticated()) {
-              endPoint += '/user';
+            if (!$scope.selectedSession.participants) {
+              var endPoint = BACKEND_URL + 'session/single';
+              if ($scope.isAuthenticated()) {
+                endPoint += '/user';
+              }
+              $http.get(endPoint, {
+                params: {sessionId: $scope.selectedSession._id.toString()}
+              })
+                .then(function(response) {
+                  $scope.selectedSession.participants = response.data.participants;
+                });
             }
-            $http.get(endPoint, {
-              params: {sessionId: $scope.selectedSession._id.toString()}
-            })
-              .then(function(response) {
-                $scope.selectedSession.participants = response.data.participants;
-              });
           });
       });
   };

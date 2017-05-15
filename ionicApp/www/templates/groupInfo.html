@@ -19,15 +19,21 @@
       <ion-item>
         מקום פעילות קבוע: {{group.homebase}}
       </ion-item>
-      <ion-item>
-        חברים: {{group.nMembers}}
+      <ion-item ng-if="group.nMembers > 0" style="cursor:pointer">
+        <a ng-click="showGroupMembers()" style="color:blue">
+          חברים: {{group.nMembers}} +
+        </a>
       </ion-item>
-      <ion-item>
-        פעילויות קרובות: {{group.nUpcoming}}
+      <ion-item ng-if="group.nMembers == 0" style="cursor:pointer">
+        <p>
+          חברים: {{group.nMembers}}
+        </p>
       </ion-item>
-      <button ng-click="goToGroup(group)" class="button button-block button-positive">
-        הצג פעילויות קרובות
-      </button>
+      <ion-item style="cursor:pointer">
+        <a ng-click="goToGroup(group)" style="color:blue">
+          פעילויות קרובות: {{group.nUpcoming}} +
+        </a>
+      </ion-item>
     </ion-list>
   </ion-content>
 </ion-modal-view>
