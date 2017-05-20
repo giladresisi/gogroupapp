@@ -178,6 +178,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.type = $scope.group.type;
     $scope.newSession.location = $scope.group.homebase;
+    $scope.newSession.extraDetails = '';
     $scope.newSessionModal.show()
       .then(function() {
         return;
@@ -520,6 +521,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.newGroup.name = '';
     $scope.newGroup.type = $scope.activityTypes[0];
     $scope.newGroup.homebase = '';
+    $scope.newGroup.extraDetails = '';
     $scope.newGroupModal.show()
       .then(function() {
         return;
@@ -715,6 +717,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.type = $scope.activityTypes[0];
     $scope.newSession.location = '';
+    $scope.newSession.extraDetails = '';
     $scope.newSessionModal.show()
       .then(function() {
         return;

@@ -9,8 +9,7 @@
     <form ng-submit="createNewGroup()">
       <div class="list">
         <label class="item item-input">
-          <span class="input-label">שם הקבוצה</span>
-          <input type="text" ng-model="newGroup.name">
+          <input type="text" placeholder="שם הקבוצה" ng-model="newGroup.name">
         </label>
         <label class="item item-input item-select">
           <div class="input-label" style="visibility:hidden">סוג פעילות קבוע</div>
@@ -19,8 +18,10 @@
           </select>
         </label>
         <label class="item item-input">
-          <span class="input-label">מקום מפגש קבוע</span>
-          <input type="text" ng-model="newGroup.homebase">
+          <input type="text" placeholder="מקום מפגש קבוע" ng-model="newGroup.homebase">
+        </label>
+        <label class="item item-input">
+          <input type="text" placeholder="פרטים נוספים (לא חובה)" ng-model="newGroup.extraDetails">
         </label>
         <button class="button button-block button-positive" type="submit">צור קבוצה</button>
       </div>

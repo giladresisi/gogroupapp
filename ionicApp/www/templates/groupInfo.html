@@ -21,17 +21,18 @@
       </ion-item>
       <ion-item ng-if="group.nMembers > 0" style="cursor:pointer">
         <a ng-click="showGroupMembers()" style="color:blue">
-          חברים: {{group.nMembers}} +
+          חברים: {{group.nMembers}}
         </a>
       </ion-item>
-      <ion-item ng-if="group.nMembers == 0" style="cursor:pointer">
-        <p>
-          חברים: {{group.nMembers}}
-        </p>
+      <ion-item ng-if="group.nMembers == 0">
+        חברים: {{group.nMembers}}
+      </ion-item>
+      <ion-item ng-if="group.extraDetails.length > 0">
+        פרטים נוספים: {{group.extraDetails}}
       </ion-item>
       <ion-item style="cursor:pointer">
         <a ng-click="goToGroup(group)" style="color:blue">
-          פעילויות קרובות: {{group.nUpcoming}} +
+          פעילויות קרובות: {{group.nUpcoming}}
         </a>
       </ion-item>
     </ion-list>

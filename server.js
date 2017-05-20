@@ -1789,6 +1789,7 @@ app.post('/group/create', ensureAuthenticated, function(req, res) {
               name: req.body.name,
               type: req.body.type,
               homebase: req.body.homebase,
+              homebase: req.body.extraDetails,
               users: [ user._id.toString() ],
               sessions: []
             };
@@ -2334,6 +2335,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
           var session = {
             type: req.body.type,
             location: req.body.location,
+            extraDetails: req.body.extraDetails,
             datetimeMS: req.body.datetimeMS,
             users: [ user._id.toString() ]
           };
