@@ -1,6 +1,8 @@
 angular.module('controllers', ['ion-datetime-picker'])
 
-.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, $ionicNavBarDelegate, $ionicPopover, BACKEND_URL) {
+.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, $stateParams, $ionicNavBarDelegate, $ionicPopover, BACKEND_URL) {
+
+  var unregisterOnStateChangeSuccess = null;
 
   $scope.user = {
     firstName: 'אורח',
@@ -69,8 +71,11 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.userPopover.hide()
       .then(function() {
         if ($state.is('app.gs')) {
-          $state.go('app.sessions');
+          $scope.removeBackdrops();
+          $state.go('app.sessions', {}, {reload: true});
         } else {
+          unregisterOnStateChangeSuccess();
+          $scope.removeBackdrops();
           $state.reload();
         }
       });
@@ -82,7 +87,9 @@ angular.module('controllers', ['ion-datetime-picker'])
       .then(function(response) {
         $auth.setToken(response);
         $scope.closeSignup();
-        $state.reload('app');
+        unregisterOnStateChangeSuccess();
+        $scope.removeBackdrops();
+        $state.reload();
       });
   };  
 
@@ -91,7 +98,9 @@ angular.module('controllers', ['ion-datetime-picker'])
     $auth.login($scope.loginData)
       .then(function() {
         $scope.closeLogin();
-        $state.reload('app');
+        unregisterOnStateChangeSuccess();
+        $scope.removeBackdrops();
+        $state.reload();
       });
   };
 
@@ -100,7 +109,9 @@ angular.module('controllers', ['ion-datetime-picker'])
     $auth.authenticate(provider)
       .then(function() {
         $scope.closeLogin();
-        $state.reload('app');
+        unregisterOnStateChangeSuccess();
+        $scope.removeBackdrops();
+        $state.reload();
       });
   };
 
@@ -137,6 +148,18 @@ angular.module('controllers', ['ion-datetime-picker'])
     }
   };
 
+  $scope.removeBackdrops = function() {
+    if ($scope.loginModal) {
+      $scope.loginModal.remove();
+    }
+    if ($scope.signupModal) {
+      $scope.signupModal.remove();
+    }
+    if ($scope.userPopover) {
+      $scope.userPopover.remove();
+    }
+  }
+
   $scope.$on('$ionicView.enter', function(e) {
     $ionicNavBarDelegate.showBar(true);
   });
@@ -147,7 +170,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.signupModal.hide();
   });
 
-  $scope.$on('$stateChangeSuccess', $scope.onStateChangeSuccess);
+  unregisterOnStateChangeSuccess = $scope.$on('$stateChangeSuccess', $scope.onStateChangeSuccess);
 })
 
 .controller('GroupCtrl', function($scope, $auth, $http, $ionicPopup,
@@ -157,6 +180,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.group = {};
   $scope.showMineOnly = false;
   $scope.activityTypes = ACTIVITY_TYPES;
+  $scope.loaded = false;
 
   $ionicModal.fromTemplateUrl('templates/newSession.html', {
     scope: $scope
@@ -463,7 +487,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     $ionicHistory.nextViewOptions({
       disableBack: true
     });
-    $state.go('app.groups');
+    $state.go('app.groups', {}, {reload:true});
 
   } else {
 
@@ -483,6 +507,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       params: {groupId: $scope.groupId}
     })
       .then(function(response) {
+        $scope.loaded = true;
         $scope.group = response.data;
         if ($scope.group.isMember == null) {
           $scope.group.isMember = false;
@@ -501,7 +526,8 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.groups = [];
   $scope.showMineOnly = false;
   $scope.activityTypes = ACTIVITY_TYPES;
-  $scope.activityTypes[0] = '<בחר סוג פעילות קבוע>'
+  $scope.activityTypes[0] = '<בחר סוג פעילות קבוע>';
+  $scope.loaded = false;
 
   $ionicModal.fromTemplateUrl('templates/newGroup.html', {
     scope: $scope
@@ -562,7 +588,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     })
       .then(function(response) {
         $scope.closeNewGroupModal();
-        $state.go('app.group', {groupId: response.data._id, group: response.data});
+        $state.go('app.group', {groupId: response.data._id, group: response.data}, {reload: true});
       });
   };
 
@@ -592,7 +618,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   };
 
   $scope.goToGroup = function(group) {
-    $state.go('app.group', {groupId: group._id, group: group});
+    $state.go('app.group', {groupId: group._id, group: group}, {reload: true});
     $scope.closeGroupInfo();
   };
   
@@ -681,8 +707,12 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.userId = $auth.getPayload().sub.toString();
   }
 
+  console.log("Groups loading");
+
   $http.get(endPoint)
     .then(function(response) {
+      console.log("Groups loaded");
+      $scope.loaded = true;
       $scope.groups = response.data;
     });
 })
@@ -693,6 +723,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.sessions = [];
   $scope.showMineOnly = false;
   $scope.activityTypes = ACTIVITY_TYPES;
+  $scope.loaded = false;
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/newSession.html', {
@@ -770,6 +801,8 @@ angular.module('controllers', ['ion-datetime-picker'])
         var s = response.data;
         s.datetime = new Date(s.datetimeMS);
         s.datetimeStr = $filter('date')(s.datetime, "dd.MM, H:mm");
+        s.isOrganizer = true;
+        s.organizerMark = '* ';
         var i = $scope.sessions.findIndex(function(session) {
           return (session.datetimeMS > s.datetimeMS);
         });
@@ -787,6 +820,12 @@ angular.module('controllers', ['ion-datetime-picker'])
     return $auth.isAuthenticated();
   };
 
+  function sessionIsSelectedWithParticipants(session) {
+    return ($scope.selectedSession &&
+            ($scope.selectedSession._id.toString() == session._id.toString()) &&
+            $scope.selectedSession.participants);
+  }
+
   $scope.onParticipationChange = function(session) {
     if (session.isParticipant) {
       session.nParticipants += 1;
@@ -796,27 +835,45 @@ angular.module('controllers', ['ion-datetime-picker'])
         method: 'POST'
       })
         .then(function(response) {
-          if ($scope.selectedSession &&
-              $scope.selectedSession.participants) {
+          if (sessionIsSelectedWithParticipants(session)) {
             $scope.selectedSession.participants.push(response.data);
+          }
+        });
+    } else if (session.isOrganizer) {
+      $ionicPopup.confirm({
+        title: 'בטוח? אתה המארגן',
+        template: '<center dir="rtl">אם לא תאשר הגעה הפעילות כולה תתבטל</center>'
+      })
+        .then(function(res) {
+          if (!res) {
+            session.isParticipant = true;
+            return;
+          } else {
+            $scope.sessions.splice($scope.sessions.findIndex(function(s) {
+              return (s._id.toString() == session._id.toString());
+            }), 1);
+            $scope.closeSessionParticipants();
+            $scope.closeSessionInfo();
+            $http({
+              url: BACKEND_URL + 'session/leave',
+              data: {sessionId: session._id, isOrganizer: true},
+              method: 'POST'
+            });
           }
         });
     } else {
       session.nParticipants -= 1;
+      if (sessionIsSelectedWithParticipants(session)) {
+        $scope.selectedSession.participants =
+          $scope.selectedSession.participants.filter(function(participant) {
+            return (participant._id.toString() != $scope.userId);
+          });
+      }
       $http({
         url: BACKEND_URL + 'session/leave',
-        data: {sessionId: session._id},
+        data: {sessionId: session._id, isOrganizer: false},
         method: 'POST'
-      })
-        .then(function() {
-          if ($scope.selectedSession &&
-              $scope.selectedSession.participants) {
-            $scope.selectedSession.participants =
-              $scope.selectedSession.participants.filter(function(participant) {
-                return (participant._id.toString() != $scope.userId);
-              });
-          }
-        });
+      });
     }
   }
 
@@ -890,7 +947,7 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.goToGroup = function(groupId) {
     $scope.closeSessionInfo();
-    $state.go('app.group', {groupId: groupId});
+    $state.go('app.group', {groupId: groupId}, {reload: true});
   };
 
   $scope.$on('$stateChangeStart', function() {
@@ -906,21 +963,30 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.userId = $auth.getPayload().sub.toString();
   }
 
+  console.log("Sessions loading");
+
   $http.get(endPoint)
     .then(function(response) {
+      console.log("Sessions loaded");
+      $scope.loaded = true;
       $scope.sessions = response.data;
       $scope.sessions.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
         arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
+        arr[index].organizerMark = '  ';
+        if (session.isOrganizer) {
+          arr[index].organizerMark = '* ';
+        }
       });
     });
 })
-.controller('GroupSessionsCtrl', function($scope, $auth, $http, $state, $ionicModal, $filter, ACTIVITY_TYPES, BACKEND_URL) {
+.controller('GroupSessionsCtrl', function($scope, $auth, $http, $state, $ionicModal, $ionicPopup, $filter, ACTIVITY_TYPES, BACKEND_URL) {
 
   // Local vars
   $scope.unseen = [];
   $scope.seen = [];
   $scope.showMineOnly = false;
+  $scope.loaded = false;
 
   $scope.isAuthenticated = function() {
     return $auth.isAuthenticated();
@@ -966,7 +1032,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   };
 
   $scope.goToGroup = function(groupId) {
-    $state.go('app.group', {groupId: groupId});
+    $state.go('app.group', {groupId: groupId}, {reload: true});
     $scope.closeSessionInfo();
   }
 
@@ -1016,8 +1082,12 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   $scope.userId = $auth.getPayload().sub.toString();
 
+  console.log("Group Sessions loading");
+
   $http.get(BACKEND_URL + 'user/groups/sessions')
     .then(function(response) {
+      console.log("Group Sessions loaded");
+      $scope.loaded = true;
       $scope.unseen = response.data.unseen;
       $scope.seen = response.data.seen;
       $scope.unseen.forEach(function(session, index, arr) {

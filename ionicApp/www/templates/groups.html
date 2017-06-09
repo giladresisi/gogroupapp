@@ -1,28 +1,29 @@
 <ion-view>
   <ion-nav-title>כל הקבוצות</ion-nav-title>
-  <ion-content class="has-tabs" padding="true" dir="rtl">
-    <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewGroupModal()">
+  <ion-content class="has-tabs" padding="true">
+    <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewGroupModal()" dir="rtl">
       צור קבוצה חדשה
     </button>
-    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly">
-      הצג רק קבוצות בהן אני חבר
+    <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly" dir="rtl">
+      <p dir="rtl">הצג רק קבוצות בהן אני חבר</p>
     </ion-checkbox>
-    <ion-item ng-show="!isAuthenticated()" class="item item-icon-left" style="background-color:#F0F8FF">
-      התחבר כדי להצטרף / ליצור קבוצה
+    <ion-item ng-show="!isAuthenticated()" style="background-color:#F0F8FF" dir="rtl">
+      <p dir="rtl">התחבר כדי להצטרף / ליצור קבוצה</p>
     </ion-item>
-    <ion-list>
-      <ion-toggle class="item item-toggle item-icon-left" ng-repeat="group in groups" ng-show="isAuthenticated() && (!showMineOnly || group.isMember)"
+    <center ng-if="!loaded"><br><ion-spinner icon="bubbles" class="spinner-calm"></ion-spinner></center>
+    <ion-list ng-if="loaded">
+      <ion-toggle class="item item-toggle item-icon-right" ng-repeat="group in groups" ng-if="isAuthenticated() && (!showMineOnly || group.isMember)"
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)">
         <i class="icon ion-ios-information-empty positive" ng-click="showGroupInfo(group)" style="cursor:pointer">
           <span class="badge icon-badge">{{group.nMembers}}</span>
         </i>
-        {{group.name}}, {{group.type}}
+        <p dir="rtl">{{group.name}}, {{group.type}}</p>
       </ion-toggle>
-      <ion-item class="item item-icon-left" ng-repeat="group in groups" ng-show="!isAuthenticated()">
-        <i class="icon ion-ios-information-empty positive" ng-click="showGroupInfo(group)" style="cursor:pointer">
+      <ion-item class="item item-icon-right" ng-repeat="group in groups" ng-show="!isAuthenticated()">
+        <i class="icon ion-ios-information-empty positive" ng-click="showGroupInfo(group)" style="cursor:pointer" dir="rtl">
           <span class="badge icon-badge">{{group.nMembers}}</span>
         </i>
-        {{group.name}}, {{group.type}}
+        <p dir="rtl">{{group.name}}, {{group.type}}</p>
       </ion-item>
     </ion-list>
   </ion-content>

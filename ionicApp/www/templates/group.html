@@ -1,34 +1,35 @@
 <ion-view>
   <ion-nav-title>{{group.name}}</ion-nav-title>
-  <ion-content class="has-tabs" padding="true" dir="rtl">
-	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.group.isMember" class="item item-toggle item-icon-left"
+  <ion-content class="has-tabs" padding="true">
+	  <ion-toggle ng-show="isAuthenticated()" ng-model="$parent.group.isMember" class="item item-toggle item-icon-right"
       toggle-class="toggle-calm" ng-change="onMembershipChange(group)" style="background-color:#F0F8FF">
       <i class="icon ion-ios-information-outline positive" ng-click="showGroupInfo()" style="cursor:pointer"></i>
-      אני חבר בקבוצה
+       <p dir="rtl">אני חבר בקבוצה</p>
     </ion-toggle>
-    <ion-item ng-show="!isAuthenticated()" class="item item-icon-left" style="background-color:#F0F8FF">
-      <i class="icon ion-ios-information-outline positive" ng-click="showGroupInfo()" style="cursor:pointer"></i>
-      התחבר כדי להצטרף לקבוצה ולפעילויות
+    <ion-item ng-show="!isAuthenticated()" style="background-color:#F0F8FF">
+       <p dir="rtl">התחבר כדי להצטרף לקבוצה ולפעילויות</p>
     </ion-item>
     <button ng-show="(group.isMember && isAuthenticated())" class="button button-block button-positive" ng-click="showNewSessionModal()">
       צור פעילות קבוצתית חדשה
   	</button>
     <ion-checkbox ng-show="(group.isMember && isAuthenticated())" ng-model="showMineOnly">
-      הצג רק פעילויות בהשתתפותי
+       <p dir="rtl">הצג רק פעילויות בהשתתפותי</p>
     </ion-checkbox>
-  	<ion-list>
-      <ion-toggle class="item item-toggle item-icon-left" ng-repeat="session in group.sessions" ng-show="group.isMember && (!showMineOnly || session.isParticipant)"
-        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)">
-        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)" style="cursor:pointer">
+    <center ng-if="!loaded"><br><ion-spinner icon="bubbles" class="spinner-calm"></ion-spinner></center>
+  	<ion-list ng-if="loaded">
+      <ion-toggle class="item item-toggle item-icon-right" ng-repeat="session in group.sessions" ng-if="group.isMember && (!showMineOnly || session.isParticipant)"
+        ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" ng-disabled="session.erased">
+        <i class="icon ion-ios-information-empty positive" ng-if="!session.erased" ng-click="showSessionInfo(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        {{session.datetimeStr}}, {{session.type}}
+        <i class="icon ion-close-round assertive" ng-if="session.erased"></i>
+        <p dir="rtl">{{session.datetimeStr}}, {{session.type}}</p>
       </ion-toggle>
-  	  <ion-item class="item item-icon-left" ng-repeat="session in group.sessions" ng-show="!group.isMember">
-        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)" style="cursor:pointer">
+  	  <ion-item class="item item-icon-right" ng-repeat="session in group.sessions" ng-if="!group.isMember">
+        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)" style="cursor:pointer" dir="rtl">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        {{session.datetimeStr}}, {{session.type}}
+        <p dir="rtl">{{session.datetimeStr}}, {{session.type}}</p>
       </ion-item>
   	</ion-list>
   </ion-content>

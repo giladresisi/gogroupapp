@@ -9,7 +9,7 @@ var option = {
     auto_reconnect: true,
     poolSize : 40,
     socketOptions: {
-        connectTimeoutMS: 500
+        connectTimeoutMS: 20000
     }
   },
   replSet: {},

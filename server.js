@@ -1314,7 +1314,7 @@ app.get('/user/basic', ensureAuthenticated, function(req,res) {
             return res.status(500).send({message: err.message });
           }
           var nowMS = (new Date()).getTime();
-          sessions.find({ $and: [ { _id: { $in: user.unseen } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+          sessions.find({ $and: [ { _id: { $in: user.unseen } }, { datetimeMS: { $gte: nowMS } }, { erased: { $ne: true } } ] }).toArray(function(err, sessionArr) {
             if (err != null) {
               console.log('get(/user/groups/sessions) error: collection.find(groupSessions)');
               return res.status(500).send({message: err.message });
@@ -1575,39 +1575,43 @@ app.get('/group/all/user', ensureAuthenticated, function(req, res) {
               }
               var nowMS = (new Date()).getTime();
               var nGroupsDone = 0;
-              groupArr.forEach(function(group, index, arr) {
-                arr[index].nMembers = group.users.length;
-                arr[index].isMember = false;
-                if (group.users.some(function(userId) {
-                  return userId.toString() == user._id.toString();
-                })) {
-                  arr[index].isMember = true;
-                }
-                delete arr[index].users;
-                arr[index].nUpcoming = 0;
-                if (group.sessions.length == 0) {
-                  nGroupsDone += 1;
-                  if (nGroupsDone == arr.length) {
-                    res.send(arr);
+              if (groupArr.length == 0) {
+                res.send([]);
+              } else {
+                groupArr.forEach(function(group, index, arr) {
+                  arr[index].nMembers = group.users.length;
+                  arr[index].isMember = false;
+                  if (group.users.some(function(userId) {
+                    return userId.toString() == user._id.toString();
+                  })) {
+                    arr[index].isMember = true;
                   }
-                } else {
-                  group.sessions.forEach(function(sessionId, i, a) {
-                    a[i] = new ObjectId(sessionId);
-                  });
-                  sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
-                    if (err != null) {
-                      console.log('get(/group/all/user) error: collection.count()');
-                      return res.status(500).send({message: err.message });
-                    }
-                    arr[index].nUpcoming = count;
-                    delete arr[index].sessions;
+                  delete arr[index].users;
+                  arr[index].nUpcoming = 0;
+                  if (group.sessions.length == 0) {
                     nGroupsDone += 1;
                     if (nGroupsDone == arr.length) {
                       res.send(arr);
                     }
-                  });
-                }
-              });
+                  } else {
+                    group.sessions.forEach(function(sessionId, i, a) {
+                      a[i] = new ObjectId(sessionId);
+                    });
+                    sessions.count({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }, function(err, count) {
+                      if (err != null) {
+                        console.log('get(/group/all/user) error: collection.count()');
+                        return res.status(500).send({message: err.message });
+                      }
+                      arr[index].nUpcoming = count;
+                      delete arr[index].sessions;
+                      nGroupsDone += 1;
+                      if (nGroupsDone == arr.length) {
+                        res.send(arr);
+                      }
+                    });
+                  }
+                });
+              }
             });
           });
         });
@@ -1648,7 +1652,10 @@ app.get('/group/single', function(req, res) {
               arr[index] = new ObjectId(sessionId);
             });
             var nowMS = (new Date()).getTime();
-            sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+            sessions.find({ $and: [ { _id: { $in: group.sessions } },
+                                    { datetimeMS: { $gte: nowMS } },
+                                    { erased: { $ne: true } }
+                                  ] }).toArray(function(err, sessionArr) {
               if (err != null) {
                 console.log('get(/group/single) error: collection.find()');
                 return res.status(500).send({message: err.message });
@@ -1661,6 +1668,7 @@ app.get('/group/single', function(req, res) {
               group.sessions.forEach(function(session, index, arr) {
                 arr[index].nParticipants = arr[index].users.length;
                 delete arr[index].users;
+                delete arr[index].organizer;
               });
               res.send(group);
             });
@@ -1719,7 +1727,18 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                   arr[index] = new ObjectId(sessionId);
                 });
                 var nowMS = (new Date()).getTime();
-                sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
+                var userSessions = user.sessions.map(function(sessionId) {
+                  return new ObjectId(sessionId.toString());
+                });
+                sessions.find({ $and: [ { _id: { $in: group.sessions } },
+                                        { datetimeMS: { $gte: nowMS } }, 
+                                        { $or: [ { erased: { $ne: true } },
+                                                 { $and: [ { users: { $elemMatch: { $eq: user._id.toString() } } },
+                                                           { _id: { $in: userSessions } }
+                                                         ] }
+                                               ] }
+                                      ] }).toArray(function(err, sessionArr) {
+                // sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
                   if (err != null) {
                     console.log('get(/group/single/user) error: collection.find()');
                     return res.status(500).send({message: err.message });
@@ -1727,7 +1746,11 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                   group.nUpcoming = sessionArr.length;
                   group.sessions = sessionArr;
                   group.sessions.sort(function(s1, s2) {
-                    return s1.datetimeMS - s2.datetimeMS;
+                    if (s1.erased != s2.erased) {
+                      return ((s1.erased == true) ? -1 : 1);
+                    } else {
+                      return (s1.datetimeMS - s2.datetimeMS);
+                    }
                   });
                   group.sessions.forEach(function(session, index, arr) {
                     arr[index].isParticipant = false;
@@ -1738,6 +1761,12 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                     }
                     arr[index].nParticipants = arr[index].users.length;
                     delete arr[index].users;
+                    arr[index].isOrganizer = false;
+                    if (session.organizer &&
+                        (session.organizer.toString() == user._id.toString())) {
+                      arr[index].isOrganizer = true;
+                    }
+                    delete arr[index].organizer;
                   });
                   res.send(group);
                 });
@@ -1985,7 +2014,7 @@ app.get('/session/all', function(req, res) {
         return res.status(500).send({message: err.message });
       }
       var nowMS = (new Date()).getTime();
-      sessions.find({ datetimeMS: { $gte: nowMS } }).toArray(function(err, sessionArr) {
+      sessions.find({ $and: [ { datetimeMS: { $gte: nowMS } }, { erased: { $ne: true } } ] }).toArray(function(err, sessionArr) {
         if (err != null) {
           console.log('get(/session/all) error: collection.find(sessions)');
           return res.status(500).send({message: err.message });
@@ -1997,6 +2026,7 @@ app.get('/session/all', function(req, res) {
         sessionArr.forEach(function(session, index, arr) {
           arr[index].nParticipants = session.users.length;
           delete arr[index].users;
+          delete arr[index].organizer;
           if (session.groupId != null) {
             groupIDs.push(new ObjectId(session.groupId));
           }
@@ -2051,25 +2081,44 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
             console.log('get(/session/all/user) error: db.collection(sessions)');
             return res.status(500).send({message: err.message });
           }
+          var userSessions = user.sessions.map(function(sessionId) {
+            return new ObjectId(sessionId.toString());
+          });
           var nowMS = (new Date()).getTime();
-          sessions.find({ datetimeMS: { $gte: nowMS } }).toArray(function(err, sessionArr) {
+          sessions.find({ $and: [ { datetimeMS: { $gte: nowMS } }, 
+                                  { $or: [ { erased: { $ne: true } },
+                                           { $and: [ { users: { $elemMatch: { $eq: user._id.toString() } } },
+                                                     { _id: { $in: userSessions } }
+                                                   ] }
+                                         ] }
+                                ] }).toArray(function(err, sessionArr) {
             if (err != null) {
               console.log('get(/session/all/user) error: collection.find()');
               return res.status(500).send({message: err.message });
             }
             sessionArr.sort(function(s1, s2) {
-              return s1.datetimeMS - s2.datetimeMS;
+              if (s1.erased != s2.erased) {
+                return ((s1.erased == true) ? -1 : 1);
+              } else {
+                return (s1.datetimeMS - s2.datetimeMS);
+              }
             });
             var groupIDs = [];
             sessionArr.forEach(function(session, index, arr) {
               arr[index].nParticipants = session.users.length;
               arr[index].isParticipant = false;
               if (session.users.some(function(userId) {
-                return userId.toString() == user._id.toString();
+                return (userId.toString() == user._id.toString());
               })) {
                 arr[index].isParticipant = true;
               }
               delete arr[index].users;
+              arr[index].isOrganizer = false;
+              if (session.organizer &&
+                  (session.organizer.toString() == user._id.toString())) {
+                arr[index].isOrganizer = true;
+              }
+              delete arr[index].organizer;
               if (session.groupId != null) {
                 groupIDs.push(new ObjectId(session.groupId));
               }
@@ -2081,7 +2130,7 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
               }
               groups.find({ _id: { $in: groupIDs } }, { fields: { name: 1 } }).toArray(function(err, groupArr) {
                 if (err != null) {
-                  console.log('get(/session/all) error: collection.find(groups)');
+                  console.log('get(/session/all/user) error: collection.find(groups)');
                   return res.status(500).send({message: err.message });
                 }
                 sessionArr.forEach(function(session, index, arr) {
@@ -2094,7 +2143,31 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
                     }
                   }
                 });
-                res.send(sessionArr);
+
+                var newUserSessions = user.sessions.filter(function(sessionId) {
+                  var s = (sessionArr.find(function(session) {
+                    return (session._id.toString() == sessionId);
+                  }));
+                  if (s && !s.erased) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                });
+                if (user.sessions.length != newUserSessions) {
+                  users.updateOne({"_id": new ObjectId(user._id.toString())}, {$set:{
+                    sessions: newUserSessions
+                  }}, function(err) {
+                    if (err) {
+                      console.log('get(/session/all/user) error: collection.updateOne(users)');
+                      return res.status(500).send({ message: err.message });
+                    }
+                    console.log('get(/session/all/user) success: sessionArr = ' + JSON.stringify(sessionArr));
+                    res.send(sessionArr);
+                  });
+                } else {
+                  res.send(sessionArr);
+                }
               });
             });
           });
@@ -2122,6 +2195,7 @@ app.get('/session/single', function(req, res) {
           return res.status(500).send({message: err.message });
         }
         session.nParticipants = session.users.length;
+        delete session.organizer;
         var userIDs = session.users.map(function(userId) {
           return new ObjectId(userId);
         });
@@ -2199,6 +2273,11 @@ app.get('/session/single/user', ensureAuthenticated, function(req, res) {
             })) {
               session.isParticipant = true;
             }
+            session.isOrganizer = false;
+            if (session.organizer.toString() == user._id.toString()) {
+              session.isOrganizer = true;
+            }
+            delete session.organizer;
             var userIDs = session.users.map(function(userId) {
               return new ObjectId(userId);
             });
@@ -2337,6 +2416,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
             location: req.body.location,
             extraDetails: req.body.extraDetails,
             datetimeMS: req.body.datetimeMS,
+            organizer: user._id.toString(),
             users: [ user._id.toString() ]
           };
           if (req.body.groupId) {
@@ -2363,6 +2443,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
                 if (err != null) {
                   return res.status(500).send({ message: err.message });
                 }
+                session.isOrganizer = true;
                 if (session.groupId != null) {
                   db.collection('groups', function(err, groups) {
                     if (err != null) {
@@ -2515,45 +2596,97 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
             var nowMS = new Date();
             nowMS.setMinutes(Math.floor(nowMS.getMinutes() / 15) * 15);
             nowMS = nowMS.getTime();
-            var userFound = false;
-            for (i = 0; i < session.users.length; i++) {
-              if (session.users[i].toString() == user._id.toString()) {
-                userFound = true;
-                session.users.splice(i, 1);
-                sessions.updateOne({"_id": new ObjectId(session._id.toString())}, {$set:{
-                  users: session.users
-                }}, function(err) {
-                  if (err) {
-                    console.log('post(/session/leave) error: collection.updateOne(sessions)');
+            var sessionFoundWithinUser = false;
+            for (j = 0; j < user.sessions.length; j++) {
+              if (user.sessions[j].toString() == session._id.toString()) {
+                sessionFoundWithinUser = true;
+                user.sessions.splice(j, 1);
+                removeOldUserSessions(sessions, users, user, session, nowMS, function(session, err) {
+                  if (err != null) {
                     return res.status(500).send({ message: err.message });
                   }
-                  var sessionFound = false;
-                  for (j = 0; j < user.sessions.length; j++) {
-                    if (user.sessions[j].toString() == session._id.toString()) {
-                      sessionFound = true;
-                      user.sessions.splice(j, 1);
-                      removeOldUserSessions(sessions, users, user, session, nowMS, function(session, err) {
-                        if (err != null) {
-                          return res.status(500).send({ message: err.message });
-                        }
-                        console.log('post(/session/leave) success: session = ' + JSON.stringify(session));
-                        return res.status(200).send(session._id);
-                      });
-                      break;
+                  // if (req.body.isOrganizer) {
+                  //   sessions.deleteOne({_id: new ObjectId(session._id.toString())}, function(err) {
+                  //     if (err) {
+                  //       console.log('post(/session/leave) error: collection.updateOne(sessions)');
+                  //       return res.status(500).send({ message: err.message });
+                  //     }
+                  //     console.log('post(/session/leave) organizer success: session = ' + JSON.stringify(session));
+                  //     return res.status(200).send(session._id);
+                  //   });
+                  // } else {
+                    var userFoundWithinSession = false;
+                    for (i = 0; i < session.users.length; i++) {
+                      if (session.users[i].toString() == user._id.toString()) {
+                        userFoundWithinSession = true;
+                        session.users.splice(i, 1);
+                        sessions.updateOne({"_id": new ObjectId(session._id.toString())}, {$set:{
+                          users: session.users,
+                          erased: req.body.isOrganizer
+                        }}, function(err) {
+                          if (err) {
+                            console.log('post(/session/leave) error: collection.updateOne(sessions)');
+                            return res.status(500).send({ message: err.message });
+                          }
+                          console.log('post(/session/leave) participant success: session = ' + JSON.stringify(session));
+                          return res.status(200).send(session._id);
+                        });
+                        break;
+                      }
+                    // }
+                    if (!userFoundWithinSession) {
+                      console.log('post(/session/leave) error: Session does not contain user');
+                      return res.status(407).send({ message: 'Session does not contain user' });
                     }
-                  }
-                  if (!sessionFound) {
-                    console.log('post(/session/leave) error: User does not contain session');
-                    return res.status(406).send({ message: 'User does not contain session' });
                   }
                 });
                 break;
               }
             }
-            if (!userFound) {
-              console.log('post(/session/leave) error: Session does not contain user');
-              return res.status(407).send({ message: 'Session does not contain user' });
+            if (!sessionFoundWithinUser) {
+              console.log('post(/session/leave) error: User does not contain session');
+              return res.status(406).send({ message: 'User does not contain session' });
             }
+
+            // var userFound = false;
+            // for (i = 0; i < session.users.length; i++) {
+            //   if (session.users[i].toString() == user._id.toString()) {
+            //     userFound = true;
+            //     session.users.splice(i, 1);
+            //     sessions.updateOne({"_id": new ObjectId(session._id.toString())}, {$set:{
+            //       users: session.users
+            //     }}, function(err) {
+            //       if (err) {
+            //         console.log('post(/session/leave) error: collection.updateOne(sessions)');
+            //         return res.status(500).send({ message: err.message });
+            //       }
+            //       var sessionFound = false;
+            //       for (j = 0; j < user.sessions.length; j++) {
+            //         if (user.sessions[j].toString() == session._id.toString()) {
+            //           sessionFound = true;
+            //           user.sessions.splice(j, 1);
+            //           removeOldUserSessions(sessions, users, user, session, nowMS, function(session, err) {
+            //             if (err != null) {
+            //               return res.status(500).send({ message: err.message });
+            //             }
+            //             console.log('post(/session/leave) success: session = ' + JSON.stringify(session));
+            //             return res.status(200).send(session._id);
+            //           });
+            //           break;
+            //         }
+            //       }
+            //       if (!sessionFound) {
+            //         console.log('post(/session/leave) error: User does not contain session');
+            //         return res.status(406).send({ message: 'User does not contain session' });
+            //       }
+            //     });
+            //     break;
+            //   }
+            // }
+            // if (!userFound) {
+            //   console.log('post(/session/leave) error: Session does not contain user');
+            //   return res.status(407).send({ message: 'Session does not contain user' });
+            // }
           });
         });
       });

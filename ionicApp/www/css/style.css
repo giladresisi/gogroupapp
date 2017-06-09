@@ -3,12 +3,6 @@
   pointer-events:initial !important;
 }
 
-.item-toggle,
-.item-toggle.item-complex .item-content {
-  padding-right: 75px;
-}
-
-
 .item-checkbox {
   padding-right: 60px;
   padding-left: 0px; }
@@ -17,6 +11,10 @@
 a {
   display: block;
   width: 100%;
+}
+
+.item p {
+  font-size: 16px;
 }
 
 .item .icon .icon-badge {
@@ -43,3 +41,15 @@ ion-popover-view.fit ion-content {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+.item-toggle,
+.item-toggle.item-complex .item-content {
+  padding-left: 99px;
+  padding-right: 50px; }
+
+.item-toggle .toggle {
+  left: 16px;
+  right: inherit;}
+
+.toggle input:disabled + .track {
+  opacity: .0; }

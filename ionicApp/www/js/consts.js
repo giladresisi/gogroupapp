@@ -1,7 +1,6 @@
 // Constants definition file
 
 app
-//.constant('BACKEND_URL', 'http://sampleEnv.gewji6ncrf.us-west-2.elasticbeanstalk.com/')
 //.constant('BACKEND_URL', 'http://gogroupapp.us-west-2.elasticbeanstalk.com/')
 .constant('BACKEND_URL', 'http://www.gogroup-app.com/')
 //.constant('BACKEND_URL', 'http://localhost:3000/')
