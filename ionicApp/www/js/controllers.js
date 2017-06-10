@@ -213,30 +213,28 @@ angular.module('controllers', ['ion-datetime-picker'])
     if ((!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'הקלד מיקום לפעילות'
+        content: "<center>הקלד מיקום לפעילות</center>"
       });
       return;
     }
     if ($scope.newSession.location.length > 15) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר'
+        content: "<center>אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
     }
     if ($scope.newSession.datetime < new Date()) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'זמן הפעילות חייב להיות בעתיד'
+        content: "<center>זמן הפעילות חייב להיות בעתיד</center>"
       });
       return;
     }
-    if (($scope.newSession.type == $scope.activityTypes[0]) ||
-        (!$scope.activityTypes.some(function(type) {return (type == $scope.newSession.type);})))
-    {
+    if ($scope.newSession.type.length > 15) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'בחר סוג פעילות חוקי'
+        content: "<center>אורך מחרוזת סוג הפעילות חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
     }
@@ -526,7 +524,6 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.groups = [];
   $scope.showMineOnly = false;
   $scope.activityTypes = ACTIVITY_TYPES;
-  $scope.activityTypes[0] = '<בחר סוג פעילות קבוע>';
   $scope.loaded = false;
 
   $ionicModal.fromTemplateUrl('templates/newGroup.html', {
@@ -545,7 +542,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.showNewGroupModal = function() {
     $scope.newGroup = {};
     $scope.newGroup.name = '';
-    $scope.newGroup.type = $scope.activityTypes[0];
+    $scope.newGroup.type = "<בחר או הקלד סוג פעילות קבוע>";
     $scope.newGroup.homebase = '';
     $scope.newGroup.extraDetails = '';
     $scope.newGroupModal.show()
@@ -559,7 +556,7 @@ angular.module('controllers', ['ion-datetime-picker'])
         (!$scope.newGroup.homebase) || ($scope.newGroup.homebase == '')) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'הקלד שם ומקום מפגש קבוע לקבוצה'
+        content: "<center>הקלד שם ומקום מפגש קבוע לקבוצה</center>"
       });
       return;
     }
@@ -567,16 +564,14 @@ angular.module('controllers', ['ion-datetime-picker'])
         ($scope.newGroup.homebase.length > 15)) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'אורכי שם קבוצה ומקום מפגש קבוע חייב להיות עד 15 תווים'
+        content: "<center>אורכי שם קבוצה ומקום מפגש קבוע חייב להיות עד 15 תווים</center>"
       });
       return;
     }
-    if (($scope.newGroup.type == $scope.activityTypes[0]) ||
-        (!$scope.activityTypes.some(function(type) {return (type == $scope.newGroup.type);})))
-    {
+    if ($scope.newSession.type.length > 15) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'סוג הפעילות הקבוע חייב להיות חוקי'
+        content: "<center>אורך מחרוזת סוג הפעילות הקבוע חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
     }
@@ -746,7 +741,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
     $scope.newSession = {};
     $scope.newSession.datetime = newSessionDatetime;
-    $scope.newSession.type = $scope.activityTypes[0];
+    $scope.newSession.type = "<בחר או הקלד סוג פעילות>";
     $scope.newSession.location = '';
     $scope.newSession.extraDetails = '';
     $scope.newSessionModal.show()
@@ -760,30 +755,28 @@ angular.module('controllers', ['ion-datetime-picker'])
     if ((!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'הקלד מיקום לפעילות'
+        content: "<center>הקלד מיקום לפעילות</center>"
       });
       return;
     }
     if ($scope.newSession.location.length > 15) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר'
+        content: "<center>אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
     }
     if ($scope.newSession.datetime < new Date()) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'זמן הפעילות חייב להיות בעתיד'
+        content: "<center>זמן הפעילות חייב להיות בעתיד</center>"
       });
       return;
     }
-    if (($scope.newSession.type == $scope.activityTypes[0]) ||
-        (!$scope.activityTypes.some(function(type) {return (type == $scope.newSession.type);})))
-    {
+    if ($scope.newSession.type.length > 15) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: 'בחר סוג פעילות חוקי'
+        content: "<center>אורך מחרוזת סוג הפעילות חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
     }
@@ -842,7 +835,7 @@ angular.module('controllers', ['ion-datetime-picker'])
     } else if (session.isOrganizer) {
       $ionicPopup.confirm({
         title: 'בטוח? אתה המארגן',
-        template: '<center dir="rtl">אם לא תאשר הגעה הפעילות כולה תתבטל</center>'
+        template: "<center>אם לא תאשר הגעה הפעילות כולה תתבטל</center>"
       })
         .then(function(res) {
           if (!res) {
