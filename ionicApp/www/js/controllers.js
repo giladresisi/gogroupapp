@@ -347,6 +347,28 @@ angular.module('controllers', ['ion-datetime-picker'])
             $scope.selectedSession.participants.push(response.data);
           }
         });
+    } else if (session.isOrganizer) {
+      $ionicPopup.confirm({
+        title: 'בטוח? אתה המארגן',
+        template: "<center>אם לא תאשר הגעה הפעילות כולה תתבטל</center>"
+      })
+        .then(function(res) {
+          if (!res) {
+            session.isParticipant = true;
+            return;
+          } else {
+            $scope.group.sessions.splice($scope.group.sessions.findIndex(function(s) {
+              return (s._id.toString() == session._id.toString());
+            }), 1);
+            $scope.closeSessionParticipants();
+            $scope.closeSessionInfo();
+            $http({
+              url: BACKEND_URL + 'session/leave',
+              data: {sessionId: session._id, isOrganizer: true},
+              method: 'POST'
+            });
+          }
+        });
     } else {
       session.nParticipants -= 1;
       $http({
@@ -469,6 +491,14 @@ angular.module('controllers', ['ion-datetime-picker'])
             return;
           });
       })
+  };
+
+  $scope.sessionIcon = function(session) {
+    if (session.isOrganizer) {
+      return 'icon ion-android-people balanced';
+    } else {
+      return 'icon ion-android-people positive';
+    }
   };
 
   $scope.$on('$stateChangeStart', function() {
@@ -943,6 +973,14 @@ angular.module('controllers', ['ion-datetime-picker'])
     $state.go('app.group', {groupId: groupId}, {reload: true});
   };
 
+  $scope.sessionIcon = function(session) {
+    if (session.isOrganizer) {
+      return 'icon ion-android-people balanced';
+    } else {
+      return 'icon ion-android-people positive';
+    }
+  };
+
   $scope.$on('$stateChangeStart', function() {
     $scope.newSessionModal.hide();
     $scope.sessionInfoModal.hide();
@@ -966,10 +1004,6 @@ angular.module('controllers', ['ion-datetime-picker'])
       $scope.sessions.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
         arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
-        arr[index].organizerMark = '  ';
-        if (session.isOrganizer) {
-          arr[index].organizerMark = '* ';
-        }
       });
     });
 })
@@ -1066,6 +1100,14 @@ angular.module('controllers', ['ion-datetime-picker'])
             return;
           });
       })
+  };
+
+  $scope.sessionIcon = function(session) {
+    if (session.isOrganizer) {
+      return 'icon ion-android-people balanced';
+    } else {
+      return 'icon ion-android-people positive';
+    }
   };
 
   $scope.$on('$stateChangeStart', function() {

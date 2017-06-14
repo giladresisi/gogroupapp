@@ -14,16 +14,16 @@
     <ion-list ng-if="loaded">
       <ion-toggle class="item item-toggle item-icon-right" ng-repeat="group in groups" ng-if="isAuthenticated() && (!showMineOnly || group.isMember)"
         ng-model="group.isMember" toggle-class="toggle-calm" ng-change="onMembershipChange(group)">
-        <i class="icon ion-ios-information-empty positive" ng-click="showGroupInfo(group)" style="cursor:pointer">
+        <i class="icon ion-android-people positive" ng-click="showGroupInfo(group)" style="cursor:pointer">
           <span class="badge icon-badge">{{group.nMembers}}</span>
         </i>
-        <p dir="rtl">{{group.name}}, {{group.type}}</p>
+        <p dir="rtl" ng-click="showGroupInfo(group)" style="cursor:pointer">{{group.name}}, {{group.type}}</p>
       </ion-toggle>
       <ion-item class="item item-icon-right" ng-repeat="group in groups" ng-show="!isAuthenticated()">
-        <i class="icon ion-ios-information-empty positive" ng-click="showGroupInfo(group)" style="cursor:pointer" dir="rtl">
+        <i class="icon ion-android-people positive" ng-click="showGroupInfo(group)" style="cursor:pointer" dir="rtl">
           <span class="badge icon-badge">{{group.nMembers}}</span>
         </i>
-        <p dir="rtl">{{group.name}}, {{group.type}}</p>
+        <p dir="rtl" ng-click="showGroupInfo(group)" style="cursor:pointer">{{group.name}}, {{group.type}}</p>
       </ion-item>
     </ion-list>
   </ion-content>

@@ -19,17 +19,18 @@
   	<ion-list ng-if="loaded">
       <ion-toggle class="item item-toggle item-icon-right" ng-repeat="session in group.sessions" ng-if="group.isMember && (!showMineOnly || session.isParticipant)"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" ng-disabled="session.erased">
-        <i class="icon ion-ios-information-empty positive" ng-if="!session.erased" ng-click="showSessionInfo(session)" style="cursor:pointer">
+        <i ng-class="sessionIcon(session)" ng-if="!session.erased" ng-click="showSessionInfo(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <i class="icon ion-close-round assertive" ng-if="session.erased"></i>
-        <p dir="rtl">{{session.datetimeStr}}, {{session.type}}</p>
+        <p ng-if="!session.erased" dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">{{session.datetimeStr}}, {{session.type}}</p>
+        <i class="icon ion-close-round assertive" ng-if="session.erased" style="cursor:not-allowed"></i>
+        <p ng-if="session.erased" dir="rtl" style="cursor:not-allowed">{{session.datetimeStr}}, {{session.type}}</p>
       </ion-toggle>
   	  <ion-item class="item item-icon-right" ng-repeat="session in group.sessions" ng-if="!group.isMember">
-        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)" style="cursor:pointer" dir="rtl">
+        <i ng-class="sessionIcon(session)" dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <p dir="rtl">{{session.datetimeStr}}, {{session.type}}</p>
+        <p dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">{{session.datetimeStr}}, {{session.type}}</p>
       </ion-item>
   	</ion-list>
   </ion-content>

@@ -11,21 +11,22 @@
       </div>
       <ion-toggle class="item item-toggle item-icon-right" ng-repeat="session in unseen" ng-show="(!showMineOnly || session.isParticipant) && !session.erased"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)">
-        <i class="icon ion-ios-information-empty positive" ng-click="showSessionInfo(session)" style="cursor:pointer">
+        <i ng-class="sessionIcon(session)" ng-click="showSessionInfo(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <p dir="rtl">{{session.datetimeStr}}, {{session.type}}</p>
+        <p dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">{{session.datetimeStr}}, {{session.type}}</p>
       </ion-toggle>
       <div class="item item-divider">
         <p dir="rtl">פעילויות קבוצתיות שכבר ראיתי</p>
       </div>
       <ion-toggle class="item item-toggle item-icon-right" ng-repeat="session in seen" ng-show="((!showMineOnly || session.isParticipant) && (!session.unseen))"
         ng-model="session.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(session)" ng-disabled="session.erased">
-        <i class="icon ion-ios-information-empty positive" ng-if="!session.erased" ng-click="showSessionInfo(session)" style="cursor:pointer">
+        <i ng-class="sessionIcon(session)" ng-if="!session.erased" ng-click="showSessionInfo(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <i class="icon ion-close-round assertive" ng-if="session.erased"></i>
-        <p dir="rtl">{{session.datetimeStr}}, {{session.type}}</p>
+        <p ng-if="!session.erased" dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">{{session.datetimeStr}}, {{session.type}}</p>
+        <i class="icon ion-close-round assertive" ng-if="session.erased" style="cursor:not-allowed"></i>
+        <p ng-if="session.erased" dir="rtl" style="cursor:not-allowed">{{session.datetimeStr}}, {{session.type}}</p>
       </ion-toggle>
     </ion-list>
   </ion-content>

@@ -1738,7 +1738,6 @@ app.get('/group/single/user', ensureAuthenticated, function(req, res) {
                                                          ] }
                                                ] }
                                       ] }).toArray(function(err, sessionArr) {
-                // sessions.find({ $and: [ { _id: { $in: group.sessions } }, { datetimeMS: { $gte: nowMS } } ] }).toArray(function(err, sessionArr) {
                   if (err != null) {
                     console.log('get(/group/single/user) error: collection.find()');
                     return res.status(500).send({message: err.message });
@@ -2605,39 +2604,28 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
                   if (err != null) {
                     return res.status(500).send({ message: err.message });
                   }
-                  // if (req.body.isOrganizer) {
-                  //   sessions.deleteOne({_id: new ObjectId(session._id.toString())}, function(err) {
-                  //     if (err) {
-                  //       console.log('post(/session/leave) error: collection.updateOne(sessions)');
-                  //       return res.status(500).send({ message: err.message });
-                  //     }
-                  //     console.log('post(/session/leave) organizer success: session = ' + JSON.stringify(session));
-                  //     return res.status(200).send(session._id);
-                  //   });
-                  // } else {
-                    var userFoundWithinSession = false;
-                    for (i = 0; i < session.users.length; i++) {
-                      if (session.users[i].toString() == user._id.toString()) {
-                        userFoundWithinSession = true;
-                        session.users.splice(i, 1);
-                        sessions.updateOne({"_id": new ObjectId(session._id.toString())}, {$set:{
-                          users: session.users,
-                          erased: req.body.isOrganizer
-                        }}, function(err) {
-                          if (err) {
-                            console.log('post(/session/leave) error: collection.updateOne(sessions)');
-                            return res.status(500).send({ message: err.message });
-                          }
-                          console.log('post(/session/leave) participant success: session = ' + JSON.stringify(session));
-                          return res.status(200).send(session._id);
-                        });
-                        break;
-                      }
-                    // }
-                    if (!userFoundWithinSession) {
-                      console.log('post(/session/leave) error: Session does not contain user');
-                      return res.status(407).send({ message: 'Session does not contain user' });
+                  var userFoundWithinSession = false;
+                  for (i = 0; i < session.users.length; i++) {
+                    if (session.users[i].toString() == user._id.toString()) {
+                      userFoundWithinSession = true;
+                      session.users.splice(i, 1);
+                      sessions.updateOne({"_id": new ObjectId(session._id.toString())}, {$set:{
+                        users: session.users,
+                        erased: req.body.isOrganizer
+                      }}, function(err) {
+                        if (err) {
+                          console.log('post(/session/leave) error: collection.updateOne(sessions)');
+                          return res.status(500).send({ message: err.message });
+                        }
+                        console.log('post(/session/leave) participant success: session = ' + JSON.stringify(session));
+                        return res.status(200).send(session._id);
+                      });
+                      break;
                     }
+                  }
+                  if (!userFoundWithinSession) {
+                    console.log('post(/session/leave) error: Session does not contain user');
+                    return res.status(407).send({ message: 'Session does not contain user' });
                   }
                 });
                 break;
@@ -2647,46 +2635,6 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
               console.log('post(/session/leave) error: User does not contain session');
               return res.status(406).send({ message: 'User does not contain session' });
             }
-
-            // var userFound = false;
-            // for (i = 0; i < session.users.length; i++) {
-            //   if (session.users[i].toString() == user._id.toString()) {
-            //     userFound = true;
-            //     session.users.splice(i, 1);
-            //     sessions.updateOne({"_id": new ObjectId(session._id.toString())}, {$set:{
-            //       users: session.users
-            //     }}, function(err) {
-            //       if (err) {
-            //         console.log('post(/session/leave) error: collection.updateOne(sessions)');
-            //         return res.status(500).send({ message: err.message });
-            //       }
-            //       var sessionFound = false;
-            //       for (j = 0; j < user.sessions.length; j++) {
-            //         if (user.sessions[j].toString() == session._id.toString()) {
-            //           sessionFound = true;
-            //           user.sessions.splice(j, 1);
-            //           removeOldUserSessions(sessions, users, user, session, nowMS, function(session, err) {
-            //             if (err != null) {
-            //               return res.status(500).send({ message: err.message });
-            //             }
-            //             console.log('post(/session/leave) success: session = ' + JSON.stringify(session));
-            //             return res.status(200).send(session._id);
-            //           });
-            //           break;
-            //         }
-            //       }
-            //       if (!sessionFound) {
-            //         console.log('post(/session/leave) error: User does not contain session');
-            //         return res.status(406).send({ message: 'User does not contain session' });
-            //       }
-            //     });
-            //     break;
-            //   }
-            // }
-            // if (!userFound) {
-            //   console.log('post(/session/leave) error: Session does not contain user');
-            //   return res.status(407).send({ message: 'Session does not contain user' });
-            // }
           });
         });
       });
