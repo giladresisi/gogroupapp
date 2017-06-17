@@ -1019,6 +1019,69 @@ angular.module('controllers', ['ion-datetime-picker'])
     return $auth.isAuthenticated();
   };
 
+  function sessionIsSelectedWithParticipants(session) {
+    return ($scope.selectedSession &&
+            ($scope.selectedSession._id.toString() == session._id.toString()) &&
+            $scope.selectedSession.participants);
+  }
+
+  $scope.onParticipationChange = function(session) {
+    if (session.isParticipant) {
+      session.nParticipants += 1;
+      $http({
+        url: BACKEND_URL + 'session/join',
+        data: {sessionId: session._id},
+        method: 'POST'
+      })
+        .then(function(response) {
+          if (sessionIsSelectedWithParticipants(session)) {
+            $scope.selectedSession.participants.push(response.data);
+          }
+        });
+    } else if (session.isOrganizer) {
+      $ionicPopup.confirm({
+        title: 'בטוח? אתה המארגן',
+        template: "<center>אם לא תאשר הגעה הפעילות כולה תתבטל</center>"
+      })
+        .then(function(res) {
+          if (!res) {
+            session.isParticipant = true;
+            return;
+          } else {
+            if (session.unseen) {
+              $scope.unseen.splice($scope.unseen.findIndex(function(s) {
+                return (s._id.toString() == session._id.toString());
+              }), 1);
+            } else {
+              $scope.seen.splice($scope.seen.findIndex(function(s) {
+                return (s._id.toString() == session._id.toString());
+              }), 1);
+            }
+            $scope.closeSessionParticipants();
+            $scope.closeSessionInfo();
+            $http({
+              url: BACKEND_URL + 'session/leave',
+              data: {sessionId: session._id, isOrganizer: true},
+              method: 'POST'
+            });
+          }
+        });
+    } else {
+      session.nParticipants -= 1;
+      if (sessionIsSelectedWithParticipants(session)) {
+        $scope.selectedSession.participants =
+          $scope.selectedSession.participants.filter(function(participant) {
+            return (participant._id.toString() != $scope.userId);
+          });
+      }
+      $http({
+        url: BACKEND_URL + 'session/leave',
+        data: {sessionId: session._id, isOrganizer: false},
+        method: 'POST'
+      });
+    }
+  };
+
   $scope.onParticipationChange = function(session) {
     if (session.isParticipant) {
       session.nParticipants += 1;
