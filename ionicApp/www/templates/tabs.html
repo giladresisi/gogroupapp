@@ -1,6 +1,11 @@
 <ion-nav-bar class="bar-stable">
   <ion-nav-back-button>
   </ion-nav-back-button>
+  <ion-nav-buttons side="left">
+    <button ng-click="reload()">
+      <i class="icon ion-android-refresh"></i>
+    </button>
+  </ion-nav-buttons>
   <ion-nav-buttons side="right">
     <button ng-click="userPopover.show($event)">
       {{user.firstName}} ▼
@@ -8,7 +13,8 @@
   </ion-nav-buttons>
 </ion-nav-bar>
 <ion-nav-view name="menuContent"></ion-nav-view>
-<div class="tabs">
+<!-- ALPHA_NO_GROUPS -->
+<!-- <div class="tabs">
   <a ui-sref="app.sessions" class="tab-item has-title" ng-class="{'tab-item-active': isStateIncluding('session')}">
     <i class="icon icon ion-play"></i>
     <span class="tab-title">ריצות</span>
@@ -22,4 +28,4 @@
     <i class="icon icon ion-star"></i>
     <span class="tab-title">My Groups</span>
   </a>
-</div>
+</div> -->

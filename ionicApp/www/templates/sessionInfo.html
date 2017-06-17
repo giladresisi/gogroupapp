@@ -27,11 +27,12 @@
       <ion-item ng-if="selectedSession.nParticipants == 0">
         משתתפים: {{selectedSession.nParticipants}}
       </ion-item>
-      <ion-item ng-if="selectedSession.groupId" style="cursor:pointer">
+      <!-- ALPHA_NO_GROUPS -->
+      <!-- <ion-item ng-if="selectedSession.groupId" style="cursor:pointer">
         <a ng-click="goToGroup(selectedSession.groupId)" style="color:blue">
           קבוצה: {{selectedSession.groupName}}
         </a>
-      </ion-item>
+      </ion-item> -->
       <ion-item ng-if="selectedSession.extraDetails.length > 0">
         פרטים נוספים: {{selectedSession.extraDetails}}
       </ion-item>
