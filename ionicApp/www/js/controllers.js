@@ -769,6 +769,85 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.activityTypes = ACTIVITY_TYPES;
   $scope.loaded = false;
 
+  $ionicModal.fromTemplateUrl('templates/login.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.loginModal = modal;
+  });
+
+  $ionicModal.fromTemplateUrl('templates/signup.html', {
+    scope: $scope
+  }).then(function(modal) {
+    $scope.signupModal = modal;
+  });
+
+  $scope.closeLogin = function() {
+    $scope.loginModal.hide()
+      .then(function() {
+        return;
+      });
+  };
+
+  $scope.closeSignup = function() {
+    $scope.signupModal.hide()
+      .then(function() {
+        return;
+      });
+  };
+
+  $scope.loginToSignup = function() {
+    $scope.closeLogin();
+    $scope.signupData = {};
+    $scope.signupModal.show()
+      .then(function() {
+        return;
+      });
+  };
+
+  $scope.signupToLogin = function() {
+    $scope.closeSignup();
+    $scope.login();
+  };
+
+  $scope.login = function() {
+    $scope.loginData = {};
+    $scope.loginModal.show()
+      .then(function() {
+        return;
+      });
+  };
+
+  // Perform the signup action when the user submits the signup form
+  $scope.doSignup = function() {
+    $auth.signup($scope.signupData)
+      .then(function(response) {
+        $auth.setToken(response);
+        $scope.closeSignup();
+        $scope.removeBackdrops();
+        $state.reload();
+      });
+  };  
+
+  // Perform the login action when the user submits the login form
+  $scope.doLogin = function() {
+    $auth.login($scope.loginData)
+      .then(function() {
+        $scope.closeLogin();
+        $scope.removeBackdrops();
+        $state.reload();
+      });
+  };
+
+  // Authenticate current visitor with external auth provider
+  $scope.authenticate = function(provider) {
+    $auth.authenticate(provider)
+      .then(function() {
+        $scope.closeLogin();
+        $scope.removeBackdrops();
+        $state.reload();
+      });
+  };
+
   $ionicModal.fromTemplateUrl('templates/newSession.html', {
     scope: $scope
   }).then(function(modal) {
@@ -1017,6 +1096,18 @@ angular.module('controllers', ['ion-datetime-picker'])
       $scope.sessionParticipantsModal.remove()
         .then(function() {
           $scope.sessionParticipantsModal = null;
+        });
+    }
+    if ($scope.loginModal) {
+      $scope.loginModal.remove()
+        .then(function() {
+          $scope.loginModal = null;
+        });
+    }
+    if ($scope.signupModal) {
+      $scope.signupModal.remove()
+        .then(function() {
+          $scope.signupModal = null;
         });
     }
   };

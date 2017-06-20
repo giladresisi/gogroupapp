@@ -9,8 +9,11 @@
     <ion-checkbox ng-show="isAuthenticated()" ng-model="showMineOnly" dir="rtl">
       <p dir="rtl">הצג רק פעילויות בהשתתפותי</p>
     </ion-checkbox>
-    <ion-item ng-show="!isAuthenticated()" style="background-color:#F0F8FF" dir="rtl">
-      <p dir="rtl">התחבר כדי להצטרף / ליצור פעילות</p>
+    <ion-item ng-show="!isAuthenticated()" style="background-color:#F0F8FF; cursor:pointer" dir="rtl">
+      <!-- <p dir="rtl">התחבר כדי להצטרף / ליצור פעילות</p> -->
+      <a ng-click="login()" style="color:blue">
+        התחבר כדי להצטרף / ליצור פעילות
+      </a>
     </ion-item>
     <center ng-if="!loaded"><br><ion-spinner icon="bubbles" class="spinner-calm"></ion-spinner></center>
     <ion-list ng-if="loaded">
