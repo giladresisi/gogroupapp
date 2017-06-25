@@ -8,10 +8,11 @@
   <ion-content>
     <form ng-submit="createNewSession()">
       <div class="list">
-        <div class="item item-icon-right" ion-datetime-picker minute-step="15"
-          only-valid="{'after': 'today', 'inclusive': true}" ng-model="newSession.datetime">
+        <div class="item item-icon-right" ion-datetime-picker minute-step="15" title="'בחר תאריך ושעה לפעילות'"
+          only-valid="{'after': 'today', 'inclusive': true, 'before': yearFromNow}" ng-model="newSession.datetime">
             <i class="icon ion-ios-calendar positive"></i>
-            <p align="right" style="cursor:pointer; color:blue">{{newSession.datetime| date: "yyyy-MM-dd H:mm"}}</p>
+            <p align="right" style="cursor:pointer; color:blue" ng-if="newSession.datetime">{{newSession.datetime| date: "yyyy-MM-dd H:mm"}}</p>
+            <p align="right" style="cursor:pointer; color:blue" ng-if="!newSession.datetime">&ltבחר תאריך ושעה לפעילות&gt</p>
         </div>
         <label class="item item-input" dir="rtl">
           <input list="activities" ng-model="newSession.type" onmousedown="value = '';" onfocusout="if (value=='') value = '<בחר או הקלד סוג פעילות>'">

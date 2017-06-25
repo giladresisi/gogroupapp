@@ -864,10 +864,9 @@ angular.module('controllers', ['ion-datetime-picker'])
 
   // Open the login modal
   $scope.showNewSessionModal = function() {
-    var newSessionDatetime = new Date();
-    newSessionDatetime.setMinutes(Math.ceil(newSessionDatetime.getMinutes() / 15) * 15);
+    $scope.yearFromNow = new Date();
+    $scope.yearFromNow.setFullYear($scope.yearFromNow.getFullYear() + 1);
     $scope.newSession = {};
-    $scope.newSession.datetime = newSessionDatetime;
     $scope.newSession.type = "<בחר או הקלד סוג פעילות>";
     $scope.newSession.location = '';
     $scope.newSession.extraDetails = '';
@@ -893,10 +892,17 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
       return;
     }
-    if ($scope.newSession.datetime < new Date()) {
+    if (!$scope.newSession.datetime) {
       $ionicPopup.alert({
         title: 'תקלה',
-        content: "<center>זמן הפעילות חייב להיות בעתיד</center>"
+        content: "<center>בחר תאריך ושעה לפעילות</center>"
+      });
+      return;
+    }
+    if (($scope.newSession.datetime < new Date()) || ($scope.newSession.datetime > $scope.yearFromNow)) {
+      $ionicPopup.alert({
+        title: 'תקלה',
+        content: "<center>זמן הפעילות חייב להיות בעתיד ובשנה הקרובה</center>"
       });
       return;
     }

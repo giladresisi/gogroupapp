@@ -2,7 +2,6 @@
   .calendar {
     text-align: center;
     font-size: 12px;
-    direction: rtl;
 
     .col {
       padding: 0;
@@ -34,7 +33,6 @@
   .month-year {
     padding: 0;
     text-align: center;
-    direction: rtl;
 
     select {
       width: 100%;
@@ -52,8 +50,7 @@
       margin: 0;
 
       &.item-select:after {
-        right: inherit;
-	left: 5px;
+        right: 5px;
       }
       input, select {
         font-size: 12px;
@@ -63,13 +60,9 @@
         line-height: 20px;
       }
       select {
-        right: 0;
+        left: 0;
         padding: 0 15px 0 1px;
-        direction: rtl;
-
-        option {
-          direction: rtl;
-        }
+        direction: ltr;
       }
       input {
         text-align: center;
@@ -140,8 +133,4 @@
       }
     }
   }
-}
-
-.popup-buttons {
-  direction: rtl;
 }

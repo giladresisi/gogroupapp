@@ -8,6 +8,11 @@
   padding-left: 0px; }
 }
 
+.item-select .item-select:after {
+  left: 16px;
+  right: inherit;
+}
+
 a {
   display: block;
   width: 100%;
