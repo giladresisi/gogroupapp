@@ -18,15 +18,12 @@ angular.module('controllers', ['ion-datetime-picker'])
       okText: 'שלח',
       cancelText: 'ביטול'
     })
-    // $ionicPopup.prompt({
-    //   title: 'כתבו לנו',
-    //   okText: 'שלח',
-    //   cancelText: 'ביטול'
-    // })
       .then(function(res) {
         if (res) {
           var remarkText = document.getElementById('remark').value;
-          console.log(remarkText);
+          if (remarkText.length == 0) {
+            return;
+          }
           var remarkObj = {
             remark: remarkText
           }
@@ -908,35 +905,42 @@ angular.module('controllers', ['ion-datetime-picker'])
   $scope.createNewSession = function() {
     if ((!$scope.newSession.location) || ($scope.newSession.location == '')) {
       $ionicPopup.alert({
-        title: 'תקלה',
+        title: 'מיקום לא תקין',
         content: "<center>הקלד מיקום לפעילות</center>"
       });
       return;
     }
     if ($scope.newSession.location.length > 15) {
       $ionicPopup.alert({
-        title: 'תקלה',
+        title: 'מיקום לא תקין',
         content: "<center>אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
     }
     if (!$scope.newSession.datetime) {
       $ionicPopup.alert({
-        title: 'תקלה',
+        title: 'תאריך ושעה לא תקינים',
         content: "<center>בחר תאריך ושעה לפעילות</center>"
       });
       return;
     }
     if (($scope.newSession.datetime < new Date()) || ($scope.newSession.datetime > $scope.yearFromNow)) {
       $ionicPopup.alert({
-        title: 'תקלה',
+        title: 'תאריך ושעה לא תקינים',
         content: "<center>זמן הפעילות חייב להיות בעתיד ובשנה הקרובה</center>"
+      });
+      return;
+    }
+    if ($scope.newSession.type == '<בחר או הקלד סוג פעילות>') {
+      $ionicPopup.alert({
+        title: 'סוג פעילות לא תקין',
+        content: "<center>בחר או הקלד סוג פעילות</center>"
       });
       return;
     }
     if ($scope.newSession.type.length > 15) {
       $ionicPopup.alert({
-        title: 'תקלה',
+        title: 'סוג פעילות לא תקין',
         content: "<center>אורך מחרוזת סוג הפעילות חייב להיות 15 תווים לכל היותר</center>"
       });
       return;
