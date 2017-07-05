@@ -1,6 +1,6 @@
 angular.module('controllers', ['ion-datetime-picker'])
 
-.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $state, $stateParams, $ionicNavBarDelegate, $ionicPopover, BACKEND_URL) {
+.controller('AppCtrl', function($scope, $auth, $http, $ionicModal, $ionicPopup, $state, $stateParams, $ionicNavBarDelegate, $ionicPopover, BACKEND_URL) {
 
   var unregisterOnStateChangeSuccess = null;
 
@@ -10,6 +10,34 @@ angular.module('controllers', ['ion-datetime-picker'])
     // nUnseen: 0
     firstName: 'אורח'
   }
+
+  $scope.comment = function() {
+    $ionicPopup.confirm({
+      title: 'כתבו לנו',
+      content: "<center dir='rtl'>אהבתם? לא אהבתם?<br>יש משהו שחייבים לדעתכם להוסיף / לשנות / להוריד?<br>נשמח לשמוע! :)<br><br><textarea dir='rtl' rows='10' cols='30' style='resize:none' id='remark' placeholder='כתבו כאן'></textarea></center>",
+      okText: 'שלח',
+      cancelText: 'ביטול'
+    })
+    // $ionicPopup.prompt({
+    //   title: 'כתבו לנו',
+    //   okText: 'שלח',
+    //   cancelText: 'ביטול'
+    // })
+      .then(function(res) {
+        if (res) {
+          var remarkText = document.getElementById('remark').value;
+          console.log(remarkText);
+          var remarkObj = {
+            remark: remarkText
+          }
+          $http({
+            url: BACKEND_URL + 'remark',
+            data: remarkObj,
+            method: 'POST'
+          });
+        }
+      });
+  };
 
   $ionicPopover.fromTemplateUrl('templates/userMenu.html', {
     scope: $scope,

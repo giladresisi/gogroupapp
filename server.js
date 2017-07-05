@@ -2642,6 +2642,27 @@ app.post('/session/leave', ensureAuthenticated, function(req, res) {
   });
 });
 
+/*
+ |--------------------------------------------------------------------------
+ | POST /remark - Append remark to remarks collection
+ |--------------------------------------------------------------------------
+ */
+app.post('/remark', function(req, res) {
+  MongoPool.getInstance(function (db) {
+    db.collection('remarks', function(err, remarks) {
+      var remark = {
+        text: req.body.remark
+      }
+      remarks.insertOne(remark, function(err) {
+        if (err) {
+          console.log('post(/remark) error: collection.insertOne()');
+          return res.status(500).send({ message: err.message });
+        }
+      });
+    });
+  });
+});
+
 /**
  * Normalize a port into a number, string, or false.
  */

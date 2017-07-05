@@ -58,3 +58,14 @@ ion-popover-view.fit ion-content {
 
 .toggle input:disabled + .track {
   opacity: .0; }
+
+.popup-buttons {
+  direction: rtl;
+}
+
+.popup-open {
+  pointer-events: none;
+}
+
+.popup-container {
+pointer-events: auto;}
