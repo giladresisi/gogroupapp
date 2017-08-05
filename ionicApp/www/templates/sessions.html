@@ -40,11 +40,18 @@
           <p class="my-hour">{{session.timeStr}}</p>
         </div>
       </ion-toggle>
-      <ion-item class="item item-icon-left" ng-repeat="session in sessions" ng-if="!isAuthenticated()">
-        <i ng-class="sessionIcon(session)" dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">
+      <ion-item class="item item-icon-left my-item" ng-repeat="session in sessions" ng-if="!isAuthenticated()">
+        <i ng-class="sessionIcon(session)" ng-click="showSessionParticipants(session)" style="cursor:pointer">
           <span class="badge icon-badge">{{session.nParticipants}}</span>
         </i>
-        <p dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">{{session.datetimeStr}}, {{session.type}}</p>
+        <!-- <p dir="rtl" ng-click="showSessionInfo(session)" style="cursor:pointer">{{session.datetimeStr}}, {{session.type}}</p> -->
+        <div class="my-clickable-item-part" ng-click="showSessionInfo(session)">
+          <h2 dir="rtl">{{session.type}}</h2>
+          <h4 dir="rtl">{{session.location}}</h4>
+          <div class="my-circle"></div>
+          <p class="my-date">{{session.dateStr}}</p>
+          <p class="my-hour">{{session.timeStr}}</p>
+        </div>
       </ion-item>
     </ion-list>
   </ion-content>
