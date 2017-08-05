@@ -1180,7 +1180,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       $scope.sessions.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
         arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
-        arr[index].dateStr = $filter('date')(arr[index].datetime, "dd.MM");
+        arr[index].dateStr = $filter('date')(arr[index].datetime, "dd/MM");
         arr[index].timeStr = $filter('date')(arr[index].datetime, "H:mm");
       });
     });

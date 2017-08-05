@@ -1,4 +1,8 @@
 /* Empty. Add your own CSS if you like */
+.item {
+  border-color: #fff;
+}
+
 .item-toggle {
   pointer-events:initial !important;
 }
@@ -61,7 +65,13 @@ ion-popover-view.fit ion-content {
   right: inherit;}
 
 .toggle input:disabled + .track {
-  opacity: .0; }
+  opacity: .5;
+  background-color: #ccc;
+}
+
+.toggle input:disabled + .track .handle {
+  background-color: #999;
+}
 
 .popup-buttons {
   direction: rtl;
@@ -85,6 +95,8 @@ pointer-events: auto;}
 
 .my-item {
   padding-top: 80px;
+  background-color: #ee9955;
+  border-width: 5px;
 }
 
 .my-item .toggle {
@@ -103,7 +115,7 @@ pointer-events: auto;}
 .my-unclickable-item-part h2 {
   position: absolute;
   top: 20px;
-  right: 70px;
+  right: 80px;
   font-weight: bold;
 }
 
@@ -111,35 +123,35 @@ pointer-events: auto;}
 .my-unclickable-item-part h4 {
   position: absolute;
   top: 50px;
-  right: 70px;
+  right: 80px;
 }
 
 .my-circle {
-  width: 50px;
-  height: 50px;
-  -webkit-border-radius: 25px;
-  -moz-border-radius: 25px;
-  border-radius: 25px;
+  width: 60px;
+  height: 60px;
+  -webkit-border-radius: 30px;
+  -moz-border-radius: 30px;
+  border-radius: 30px;
   background: yellow;
   z-index: 5;
   position: absolute;
   right: 5px;
-  top: 25px;
+  top: 18px;
 }
 
 .my-date {
   z-index: 6;
   position: absolute;
-  right: 12px;
-  top: 30px;
+  right: 16px;
+  top: 27px;
   font-size: 12px;
   font-weight: bold;
 }
 
-.my-hour {
+.my-time {
   z-index: 6;
   position: absolute;
-  right: 12px;
+  right: 16px;
   top: 50px;
   font-size: 12px;
   font-weight: bold;
