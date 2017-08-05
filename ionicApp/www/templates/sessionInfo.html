@@ -20,7 +20,7 @@
         מיקום: {{selectedSession.location}}
       </ion-item>
       <ion-item ng-if="selectedSession.nParticipants > 0" style="cursor:pointer">
-        <a ng-click="showSessionParticipants()" style="color:blue">
+        <a ng-click="showSessionParticipants(selectedSession)" style="color:blue">
           משתתפים: {{selectedSession.nParticipants}}
         </a>
       </ion-item>

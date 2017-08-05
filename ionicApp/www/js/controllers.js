@@ -166,7 +166,11 @@ angular.module('controllers', ['ion-datetime-picker'])
         $http.get(BACKEND_URL + 'user/basic')
           .then(function(response) {
             $scope.user = response.data;
-            $scope.user.firstName = $scope.user.displayName.substring(0, $scope.user.displayName.indexOf(" "));
+            $scope.user.firstName = $scope.user.displayName;
+            var firstSpaceIndex = $scope.user.firstName.indexOf(" ");
+            if (firstSpaceIndex != -1) {
+              $scope.user.firstName = $scope.user.firstName.substring(0, firstSpaceIndex);
+            }
           })
           .catch(function(err) {
             console.log('Error get(/user/basic): ' + JSON.stringify(err) + ', logging out...');
@@ -1042,6 +1046,7 @@ angular.module('controllers', ['ion-datetime-picker'])
   });
 
   $scope.showSessionInfo = function(session) {
+    $scope.closeSessionParticipants();
     if (!$scope.selectedSession ||
         ($scope.selectedSession._id.toString() != session._id.toString())) {
       $scope.selectedSession = session;
@@ -1053,10 +1058,12 @@ angular.module('controllers', ['ion-datetime-picker'])
   };
 
   $scope.closeSessionInfo = function() {
-    $scope.sessionInfoModal.hide()
-      .then(function() {
-        return;
-      });
+    if ($scope.sessionInfoModal.isShown()) {
+      $scope.sessionInfoModal.hide()
+        .then(function() {
+          return;
+        });
+    }
   };
 
   $ionicModal.fromTemplateUrl('templates/sessionParticipants.html', {
@@ -1065,42 +1072,44 @@ angular.module('controllers', ['ion-datetime-picker'])
     $scope.sessionParticipantsModal = modal;
   });
 
-  $scope.showSessionParticipants = function() {
-    $scope.sessionInfoModal.hide()
+  $scope.showSessionParticipants = function(session) {
+    $scope.closeSessionInfo();
+    if (!$scope.selectedSession ||
+        ($scope.selectedSession._id.toString() != session._id.toString())) {
+      $scope.selectedSession = session;
+    }
+    $scope.sessionParticipantsModal.show()
       .then(function() {
-        $scope.sessionParticipantsModal.show()
-          .then(function() {
-            if (!$scope.selectedSession.participants) {
-              var endPoint = BACKEND_URL + 'session/single';
-              if ($scope.isAuthenticated()) {
-                endPoint += '/user';
-              }
-              $http.get(endPoint, {
-                params: {sessionId: $scope.selectedSession._id.toString()}
-              })
-                .then(function(response) {
-                  $scope.selectedSession.participants = response.data.participants;
-                });
-            }
-          });
+        if (!$scope.selectedSession.participants) {
+          var endPoint = BACKEND_URL + 'session/single';
+          if ($scope.isAuthenticated()) {
+            endPoint += '/user';
+          }
+          $http.get(endPoint, {
+            params: {sessionId: $scope.selectedSession._id.toString()}
+          })
+            .then(function(response) {
+              $scope.selectedSession.participants = response.data.participants;
+            });
+        }
       });
   };
 
   $scope.closeSessionParticipants = function() {
-    $scope.sessionParticipantsModal.hide()
-      .then(function() {
-        return;
-      });
+    if ($scope.sessionParticipantsModal.isShown()) {
+      $scope.sessionParticipantsModal.hide()
+        .then(function() {
+          return;
+        });
+    }
   };
 
   $scope.backToSessionInfo = function() {
-    $scope.sessionParticipantsModal.hide()
+    $scope.closeSessionParticipants();
+    $scope.sessionInfoModal.show()
       .then(function() {
-        $scope.sessionInfoModal.show()
-          .then(function() {
-            return;
-          });
-      })
+        return;
+      });
   };
 
   // ALPHA_NO_GROUPS
@@ -1171,6 +1180,8 @@ angular.module('controllers', ['ion-datetime-picker'])
       $scope.sessions.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
         arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
+        arr[index].dateStr = $filter('date')(arr[index].datetime, "dd.MM");
+        arr[index].timeStr = $filter('date')(arr[index].datetime, "H:mm");
       });
     });
 })

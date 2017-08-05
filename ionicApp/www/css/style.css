@@ -18,16 +18,19 @@ a {
   width: 100%;
 }
 
-.item p {
-  font-size: 16px;
-}
-
 .item .icon .icon-badge {
 	position: absolute;
-	top: 0px;
-	right: 0px;
+	top: 50px;
 	font-size: 12px;
 	color: #f00;
+}
+
+.item-icon-right .icon .icon-badge {
+  right: 20px;
+}
+
+.item-icon-left .icon .icon-badge {
+  left: 20px;
 }
 
 ion-popover-view.fit {
@@ -49,8 +52,9 @@ ion-popover-view.fit ion-content {
 
 .item-toggle,
 .item-toggle.item-complex .item-content {
-  padding-left: 99px;
-  padding-right: 50px; }
+  padding-left: 70px;
+  padding-right: 0;
+}
 
 .item-toggle .toggle {
   left: 16px;
@@ -69,3 +73,74 @@ ion-popover-view.fit ion-content {
 
 .popup-container {
 pointer-events: auto;}
+
+.item-icon-left .icon {
+  left: 20px;
+}
+
+.item-icon-left .icon:before,
+.item-icon-right .icon:before {
+  padding-top: 55px;
+}
+
+.my-item {
+  padding-top: 80px;
+}
+
+.my-item .toggle {
+  top: 10px;
+}
+
+.my-clickable-item-part {
+  cursor: pointer;
+}
+
+.my-unclickable-item-part {
+  cursor:not-allowed
+}
+
+.my-clickable-item-part h2,
+.my-unclickable-item-part h2 {
+  position: absolute;
+  top: 20px;
+  right: 70px;
+  font-weight: bold;
+}
+
+.my-clickable-item-part h4,
+.my-unclickable-item-part h4 {
+  position: absolute;
+  top: 50px;
+  right: 70px;
+}
+
+.my-circle {
+  width: 50px;
+  height: 50px;
+  -webkit-border-radius: 25px;
+  -moz-border-radius: 25px;
+  border-radius: 25px;
+  background: yellow;
+  z-index: 5;
+  position: absolute;
+  right: 5px;
+  top: 25px;
+}
+
+.my-date {
+  z-index: 6;
+  position: absolute;
+  right: 12px;
+  top: 30px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.my-hour {
+  z-index: 6;
+  position: absolute;
+  right: 12px;
+  top: 50px;
+  font-size: 12px;
+  font-weight: bold;
+}
