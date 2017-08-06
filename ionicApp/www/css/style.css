@@ -20,6 +20,8 @@
 a {
   display: block;
   width: 100%;
+  color: blue;
+  text-decoration: initial;
 }
 
 .item .icon .icon-badge {
@@ -88,14 +90,13 @@ pointer-events: auto;}
   left: 20px;
 }
 
-.item-icon-left .icon:before,
-.item-icon-right .icon:before {
+.my-item .icon:before {
   padding-top: 55px;
 }
 
 .my-item {
   padding-top: 80px;
-  background-color: #ee9955;
+  background-color: #b3f0ff;
   border-width: 5px;
 }
 
@@ -132,7 +133,7 @@ pointer-events: auto;}
   -webkit-border-radius: 30px;
   -moz-border-radius: 30px;
   border-radius: 30px;
-  background: yellow;
+  background: #003399;
   z-index: 5;
   position: absolute;
   right: 5px;
@@ -146,6 +147,7 @@ pointer-events: auto;}
   top: 27px;
   font-size: 12px;
   font-weight: bold;
+  color: white;
 }
 
 .my-time {
@@ -155,4 +157,26 @@ pointer-events: auto;}
   top: 50px;
   font-size: 12px;
   font-weight: bold;
+  color: white;
+}
+
+.bar-header,
+.bar.bar-stable {
+  background-color: #003399;
+}
+
+.title,
+.nav-bar-title {
+  color: white;
+  font-weight: bold;
+}
+
+.checkbox input:before,
+.checkbox-icon:before {
+  border-width: 3px;
+}
+
+.item p {
+  padding-right: 16px;
+  font-size: 16px;
 }

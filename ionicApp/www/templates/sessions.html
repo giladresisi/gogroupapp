@@ -1,6 +1,6 @@
 <ion-view>
   <!-- <ion-nav-title>כל הפעילויות</ion-nav-title> ALPHA_NO_GROUPS -->
-  <ion-nav-title style="color:red">לוח רמת אשכול</ion-nav-title>
+  <ion-nav-title>לוח רמת אשכול</ion-nav-title>
   <!-- <ion-content class="has-tabs" padding="true"> ALPHA_NO_GROUPS -->
   <ion-content padding="true">
     <button ng-show="isAuthenticated()" class="button button-block button-positive" ng-click="showNewSessionModal()" dir="rtl">
@@ -29,15 +29,15 @@
           <h2 dir="rtl">{{session.type}}</h2>
           <h4 dir="rtl">{{session.location}}</h4>
           <div class="my-circle"></div>
-          <p class="my-date">{{session.dateStr}}</p>
-          <p class="my-time">{{session.timeStr}}</p>
+          <h3 class="my-date">{{session.dateStr}}</h3>
+          <h3 class="my-time">{{session.timeStr}}</h3>
         </div>
         <div class="my-unclickable-item-part" ng-if="session.erased">
           <h2 dir="rtl">{{session.type}}</h2>
           <h4 dir="rtl">{{session.location}}</h4>
           <div class="my-circle"></div>
-          <p class="my-date">{{session.dateStr}}</p>
-          <p class="my-time">{{session.timeStr}}</p>
+          <h3 class="my-date">{{session.dateStr}}</h3>
+          <h3 class="my-time">{{session.timeStr}}</h3>
         </div>
       </ion-toggle>
       <!-- <ion-item class="item item-icon-left my-item" ng-repeat="session in sessions" ng-if="!isAuthenticated()"> -->
@@ -51,8 +51,8 @@
           <h2 dir="rtl">{{session.type}}</h2>
           <h4 dir="rtl">{{session.location}}</h4>
           <div class="my-circle"></div>
-          <p class="my-date">{{session.dateStr}}</p>
-          <p class="my-time">{{session.timeStr}}</p>
+          <h3 class="my-date">{{session.dateStr}}</h3>
+          <h3 class="my-time">{{session.timeStr}}</h3>
         </div>
       <!-- </ion-item> -->
       </ion-toggle>

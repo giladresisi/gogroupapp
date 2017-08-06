@@ -2413,6 +2413,7 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
           var session = {
             type: req.body.type,
             location: req.body.location,
+            link: req.body.link,
             extraDetails: req.body.extraDetails,
             datetimeMS: req.body.datetimeMS,
             organizer: user._id.toString(),

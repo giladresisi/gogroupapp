@@ -7,7 +7,7 @@
   </ion-header-bar>
   <ion-content class="has-tabs" padding="true" dir="rtl">
 	  <ion-toggle ng-if="isAuthenticated()" ng-model="selectedSession.isParticipant" toggle-class="toggle-calm" ng-change="onParticipationChange(selectedSession)">
-      אני משתתף בפעילות
+      <p>אני משתתף בפעילות</p>
     </ion-toggle>
     <ion-list>
       <ion-item>
@@ -33,6 +33,9 @@
           קבוצה: {{selectedSession.groupName}}
         </a>
       </ion-item> -->
+      <ion-item ng-if="selectedSession.link.length > 0">
+        <a ng-href="{{selectedSession.link}}" target="_blank">לינק לפלייר</a>
+      </ion-item>
       <ion-item ng-if="selectedSession.extraDetails.length > 0">
         פרטים נוספים: {{selectedSession.extraDetails}}
       </ion-item>
