@@ -34,7 +34,8 @@
         </a>
       </ion-item> -->
       <ion-item ng-if="selectedSession.link.length > 0">
-        <a ng-href="{{selectedSession.link}}" target="_blank">לינק לפלייר</a>
+        <!-- <a ng-href="{{selectedSession.link}}" target="_system">לינק לפלייר</a> -->
+        <a ng-click="goToLink(selectedSession.link)" style="cursor:pointer">לינק לפלייר</a>
       </ion-item>
       <ion-item ng-if="selectedSession.extraDetails.length > 0">
         פרטים נוספים: {{selectedSession.extraDetails}}

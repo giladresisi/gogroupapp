@@ -1126,6 +1126,10 @@ angular.module('controllers', ['ion-datetime-picker'])
     }
   };
 
+  $scope.goToLink = function(url) {
+    window.open(url, '_system', 'location=yes');
+  };
+
   $scope.removeBackdrops = function() {
     if ($scope.newSessionModal) {
       $scope.newSessionModal.remove()
@@ -1179,7 +1183,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       $scope.sessions = response.data;
       $scope.sessions.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
-        arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
+        // arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
         arr[index].dateStr = $filter('date')(arr[index].datetime, "dd/MM");
         arr[index].timeStr = $filter('date')(arr[index].datetime, "H:mm");
       });
