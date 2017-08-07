@@ -914,7 +914,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
       return;
     }
-    if ($scope.newSession.location.length > 15) {
+    if ($scope.newSession.location.length > 40) {
       $ionicPopup.alert({
         title: 'מיקום לא תקין',
         content: "<center>אורך מחרוזת המיקום חייב להיות 15 תווים לכל היותר</center>"
@@ -942,7 +942,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       });
       return;
     }
-    if ($scope.newSession.type.length > 15) {
+    if ($scope.newSession.type.length > 18) {
       $ionicPopup.alert({
         title: 'סוג פעילות לא תקין',
         content: "<center>אורך מחרוזת סוג הפעילות חייב להיות 15 תווים לכל היותר</center>"
@@ -962,7 +962,9 @@ angular.module('controllers', ['ion-datetime-picker'])
         $scope.closeNewSessionModal();
         var s = response.data;
         s.datetime = new Date(s.datetimeMS);
-        s.datetimeStr = $filter('date')(s.datetime, "dd.MM, H:mm");
+        // s.datetimeStr = $filter('date')(s.datetime, "dd/MM, H:mm");
+        s.dateStr = $filter('date')(s.datetime, "dd/MM");
+        s.timeStr = $filter('date')(s.datetime, "H:mm");
         s.isOrganizer = true;
         s.organizerMark = '* ';
         var i = $scope.sessions.findIndex(function(session) {
@@ -1183,7 +1185,7 @@ angular.module('controllers', ['ion-datetime-picker'])
       $scope.sessions = response.data;
       $scope.sessions.forEach(function(session, index, arr) {
         arr[index].datetime = new Date(session.datetimeMS);
-        // arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd.MM, H:mm");
+        // arr[index].datetimeStr = $filter('date')(arr[index].datetime, "dd/MM, H:mm");
         arr[index].dateStr = $filter('date')(arr[index].datetime, "dd/MM");
         arr[index].timeStr = $filter('date')(arr[index].datetime, "H:mm");
       });

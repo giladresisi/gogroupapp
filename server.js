@@ -2095,6 +2095,8 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
               console.log('get(/session/all/user) error: collection.find()');
               return res.status(500).send({message: err.message });
             }
+            console.log('datetimeMS unsorted: ' + sessionArr.map(function(s) { return s.datetimeMS; }));
+            console.log('erased unsorted: ' + sessionArr.map(function(s) { return s.erased; }));
             sessionArr.sort(function(s1, s2) {
               if (s1.erased != s2.erased) {
                 return ((s1.erased == true) ? -1 : 1);
@@ -2102,6 +2104,8 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
                 return (s1.datetimeMS - s2.datetimeMS);
               }
             });
+            console.log('datetimeMS sorted: ' + sessionArr.map(function(s) { return s.datetimeMS; }));
+            console.log('erased sorted: ' + sessionArr.map(function(s) { return s.erased; }));
             var groupIDs = [];
             sessionArr.forEach(function(session, index, arr) {
               arr[index].nParticipants = session.users.length;
@@ -2161,7 +2165,7 @@ app.get('/session/all/user', ensureAuthenticated, function(req, res) {
                       console.log('get(/session/all/user) error: collection.updateOne(users)');
                       return res.status(500).send({ message: err.message });
                     }
-                    console.log('get(/session/all/user) success: sessionArr = ' + JSON.stringify(sessionArr));
+                    //console.log('get(/session/all/user) success: sessionArr = ' + JSON.stringify(sessionArr));
                     res.send(sessionArr);
                   });
                 } else {
@@ -2417,7 +2421,8 @@ app.post('/session/create', ensureAuthenticated, function(req, res) {
             extraDetails: req.body.extraDetails,
             datetimeMS: req.body.datetimeMS,
             organizer: user._id.toString(),
-            users: [ user._id.toString() ]
+            users: [ user._id.toString() ],
+            erased: false
           };
           if (req.body.groupId) {
             session.groupId = req.body.groupId
